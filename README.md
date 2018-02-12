@@ -8,8 +8,11 @@ Deep Learning codes for MNIST with detailed explanation
 
   Email : dan59314@gmail.com
   linkedin : https://www.linkedin.com/in/daniel-lu-238910a4/
+  
   Web :     http://www.rasvector.url.tw/
+  
   YouTube : http://www.youtube.com/dan59314/playlist
+  
 
   This software may be freely copied, modified, and redistributed
   provided that this copyright notice is preserved on all copies.
