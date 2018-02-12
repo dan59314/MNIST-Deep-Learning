@@ -1,8 +1,7 @@
 # MNIST-Deep-Learning
 Deep Learning codes for MNIST with detailed explanation 
 
-
-/* ----------------------------------------------------------
+  ---------------------------------------------------------------------------------
 
   Copyright: (C) Daniel Lu, RasVector Technology.
 
@@ -13,6 +12,9 @@ Deep Learning codes for MNIST with detailed explanation
   Web :     http://www.rasvector.url.tw/
   
   YouTube : http://www.youtube.com/dan59314/playlist
+  
+  Instructables : https://goo.gl/EwRGYA
+  
   
 
   This software may be freely copied, modified, and redistributed
@@ -38,9 +40,14 @@ Deep Learning codes for MNIST with detailed explanation
   
   YouTube : http://www.youtube.com/dan59314/playlist
   
+  Instructables : https://goo.gl/EwRGYA
+  
+  
 
   使用或修改軟體，請註明引用出處資訊如上。未經過作者明示同意，禁止使用在商業用途。
-*/
+  
+  
+  ---------------------------------------------------------------------------------
 
 
 Example :  
