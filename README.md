@@ -7,6 +7,7 @@ Deep Learning codes for MNIST with detailed explanation
   Copyright: (C) Daniel Lu, RasVector Technology.
 
   Email : dan59314@gmail.com
+  
   linkedin : https://www.linkedin.com/in/daniel-lu-238910a4/
   
   Web :     http://www.rasvector.url.tw/
@@ -40,6 +41,7 @@ Deep Learning codes for MNIST with detailed explanation
 Example :  
   1. Predict_Digit  
       Predict_Digit_RvNeuralNetwork.py
+      
   2. Training
       Test_RvNeuralNetwork.py
       
