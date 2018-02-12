@@ -31,8 +31,13 @@ Deep Learning codes for MNIST with detailed explanation
   版權宣告  (C) Daniel Lu, RasVector Technology.
 
   Email : dan59314@gmail.com
+  
+  linkedin : https://www.linkedin.com/in/daniel-lu-238910a4/
+  
   Web :     http://www.rasvector.url.tw/
+  
   YouTube : http://www.youtube.com/dan59314/playlist
+  
 
   使用或修改軟體，請註明引用出處資訊如上。未經過作者明示同意，禁止使用在商業用途。
 */
