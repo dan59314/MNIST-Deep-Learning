@@ -2,7 +2,8 @@
 Deep Learning codes for MNIST with detailed explanation 
 
 
-/* -----------------------------------------------------------------------------
+/* ----------------------------------------------------------
+
   Copyright: (C) Daniel Lu, RasVector Technology.
 
   Email : dan59314@gmail.com
