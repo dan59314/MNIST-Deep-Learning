@@ -57,4 +57,9 @@ Example :
   2. Training
       Test_RvNeuralNetwork.py
       
-      
+------------------------------------------------------------------------------------      
+Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
+
+https://github.com/dan59314
+
+http://www.rasvector.url.tw/hot_91270.html
