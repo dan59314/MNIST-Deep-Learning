@@ -79,7 +79,7 @@ def Ask_Input_Float(sAsk, defaultFloat=0.0):
 def Ask_Enum(sAsk, enum, default):
     print("\n{}".format(sAsk))
     for eu in enum: 
-        print("{} = {}".format(eu, eu.value ))
+        print("  {} = {}".format(eu.name, eu.value ))
     sInput = input("Input Index (Now={}, \"{}\"): ".format( default.value,default.name ) )
     try: 
         if ""!=sInput: 

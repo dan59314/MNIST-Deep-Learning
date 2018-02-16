@@ -63,46 +63,39 @@ import RvAskInput as ri
 import RvMiscFunctions as rf
 import RvActivationCost as ac
 from RvActivationCost import EnumDropOutMethod as drpOut
+import PlotFunctions as pltFn
 
-#%%
-def Predict_Digits(net, lstT, plotDigit=True):
-    # 隨機測試某筆數字 ----------------------------------------------    
-    start = time.time() 
-    
-    sResult = ["錯誤", "正確"]
-    sampleNum=10000 # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
-    plotNum = 5
-    plotMod = int(sampleNum/plotNum) + 1
-    correctNum=0    
-    failNum = 0
-    for i in range(0, sampleNum):
-        doPlot = (i%plotMod == 0)
-        aId = np.random.randint(0,len(lstT))
-        label, result = net.Predict_Digit(lstT[aId], False)    
-        if label==result: correctNum+=1
-        else: 
-            failNum+=1
-            doPlot = (failNum<plotNum) 
-        if doPlot and plotDigit:
-            rf.Plot_Digit(lstT[aId])
-            print("({}): Label={}, Predict:{} -> {} ".
-              format(i, label,result, sResult[(label==result)])) 
-            
-    dt = time.time()-start
-    print("\nAccu:{}, T:{:.3f} sec, Correct/All = {}/{}.\n".
-          format(correctNum/sampleNum, dt, correctNum, sampleNum) )   
 
-def Predict_Digits_FromNetworkFile(fnNetData, lstT, plotDigit=True):
-    print(fnNetData)
-    if (not os.path.isfile(fnNetData)): return
-    # 從網路檔案重建網路 ---------
-    net = rn.RvNeuralNetwork.Create_Network(fnNetData)
-    Predict_Digits(net, lstT, plotDigit)
-    print("NetData: {}".format(fnNetData))
+
+
+#%%  
+
+
+def Add_ConvLayer(lyrObjs, lyrsNeus,  inputNeusNum, cnvLyrSId):
+    nChannel=1
+    inputW = np.sqrt(inputNeusNum)
+    inputH = inputW
+    inputShape =[inputW,inputH,nChannel]     
     
-    
+    # filterW,H 越小，產生的神經元越多，精度越高 ------------------
+    filterW       = 5
+    filterH       = 5
+    filterNum     = 10
+    filterShape = np.asarray([filterW,filterH, nChannel, filterNum])     
+    # filterStride 越小，重疊區越大，產生的神經元越多，精度越高 -----------
+    filterStride = 1
+    cnvLyr = rn.RvConvolutionLayer(
+        inputShape, # eg. [pxlW, pxlH, Channel]
+        filterShape, # eg. [pxlW, pxlH, Channel, FilterNum], 
+        filterStride)        
+    lyrObjs.append(cnvLyr)
+    cnvLyrSId += 1
+    lyrsNeus.insert(cnvLyrSId, cnvLyr.Get_NeuronsNum())
+    return lyrsNeus, cnvLyrSId, cnvLyr
+
+
 def Main():
-    #%% Load MNIST ****************************************************************
+    #Load MNIST ****************************************************************
     
     #使用 mnist.pkl.gz(50000筆） 準確率 0.96 
     #使用 mnist_expanded.pkl.gz(250000筆） 準確率提高到 0.97 
@@ -113,8 +106,7 @@ def Main():
     lstT = list(lstT)
     
     
-    
-    #%% 主程式區 *********************************************************************
+    # 主程式區 *********************************************************************
     path = ".\\TmpLogs\\"
     if not os.path.isdir(path):
         os.mkdir(path)           
@@ -122,28 +114,46 @@ def Main():
     fnNetworkData = "{}{}_NetData".format(path,rn.RvNeuralNetwork.__name__)   
     fnNetworkData1 = ""
     
-    #%% Training ***********************************************************
+    # Training ***********************************************************
     # Ask DoTraining-
     DoTraining = ri.Ask_YesNo("要執行SGD()訓練嗎?", "y")
     if DoTraining:             
+        """
+        [784,50,10], loop=100, 0.9725
+        """
          # 建立 RvNeuralNetWork----------------------------------------------
         inputNeusNum = len(lstTrain[0][0])
         lyr1NeuNum = 50
         lyr2NeuNum = len(lstTrain[0][1])
         
         lyrsNeus = [inputNeusNum, lyr1NeuNum]
-        lyrsNeus = ri.Ask_Add_Array_Int("輸入增加新層神經元數", lyrsNeus, 50)
+        lyrsNeus = ri.Ask_Add_Array_Int("輸入增加新層神經元數", lyrsNeus, lyr1NeuNum)
         lyrsNeus.append(lyr2NeuNum)
         
         #net = rn.RvNeuralNetwork( \
         #   rn.RvNeuralNetwork.LayersNeurons_To_RvNeuralLayers(lyrsNeus))
         #net = rn.RvNeuralNetwork.Class_Create_LayersNeurons(lyrsNeus)
-        net = rn.RvNeuralNetwork(lyrsNeus)  # ([784,50,10])
+        #net = rn.RvNeuralNetwork(lyrsNeus)  # ([784,50,10])
+        
+        cnvLyrSId = 0
+        lyrObjs=[]
+        
+        
+        # 先加入RvConvolutionLayer--------------------------------   
+        EnableCovolutionLayer = ri.Ask_YesNo("要加上 ConvolutionLayer 嗎?", "y")
+        if EnableCovolutionLayer:             
+          lyrsNeus, cnvLyrSId, cnvLyr = Add_ConvLayer(lyrObjs, lyrsNeus, inputNeusNum, cnvLyrSId)
+          
+          
+        # 建立 Layer Object array -------------------------------
+        for iLyr in range(cnvLyrSId, len(lyrsNeus)-1):
+            lyrObjs.append( rn.RvNeuralLayer([lyrsNeus[iLyr], lyrsNeus[iLyr+1]]) )
+        net = rn.RvNeuralNetwork(lyrObjs)
         
         
         # Ask Activation  ------------------_----------
         enumActivation = ri.Ask_Enum("選取 Activation 類別.", 
-             ac.ActivationFunction,  ac.ActivationFunction.afReLU )
+             ac.EnumActivation,  ac.EnumActivation.afReLU )
         for lyr in net.NeuralLayers:
             lyr.ClassActivation, lyr.ClassCost = \
             ac.Get_ClassActivation(enumActivation)
@@ -151,19 +161,17 @@ def Main():
         net.Motoring_TrainningProcess = rn.Debug
     
         net.NetEnableDropOut = ri.Ask_YesNo("要執行DropOut嗎?", "n")
-        sDropOut = "_DropOut" if net.NetEnableDropOut else ""
         if net.NetEnableDropOut:
             enumDropOut = ri.Ask_Enum("選取 DropOut Method.", 
             ac.EnumDropOutMethod,  drpOut.eoSmallActivation )
             rn.gDropOutRatio = ri.Ask_Input_Float("輸入DropOut ratio.", rn.gDropOutRatio)
             net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
-            sDropOut = sDropOut + "_{}".format(net.NetEnumDropOut.name)
         
         monitoring = ri.Ask_YesNo("是否監看訓練過程?", "y")
         net.Motoring_TrainningProcess = monitoring
         
         #輸入網路參數 -------------------------------------------    
-        loop = 5  # loop影響正確率不大，10和 30都在 9成以上
+        loop = 1  # loop影響正確率不大，10和 30都在 9成以上
         stepNum = 10 # stepNum越大，正確率越低　10->0.9,  100->0.5
         learnRate = 0.1  # 調整 learnRate 和 lmbda 的參數，會互相影響結果
         lmbda = 5.0     # 加上 lmbda(Regularization) 可以解決 overfitting 問題        
@@ -187,32 +195,61 @@ def Main():
         net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda )
         dT = time.time()-start
         
+        # 劃出 Neurons Weights
+        iLyr=0
+        print("Layer({}) : ".format(iLyr))
+        aId = np.random.randint(0, len(net.NeuralLayers[iLyr].NeuronsWeights) )
+        net.NeuralLayers[iLyr].Plot_NeuronsWeights([aId,aId+1])
+        
         # 存出網路參數檔案
-        fnNetworkData1 = "{}{}_{:.2f}.txt".format(fnNetworkData, 
-            sDropOut, net.BestAccuracyRatio) 
+        sConvLyr, sDropOut = "", ""
+        sConvLyr = "_CnvLyr" if ([]!=net.Get_ConvolutionLayerID()) else ""        
+        sDropOut = "_DropOut_{}".format(net.NetEnumDropOut.name) \
+            if net.NetEnableDropOut else ""        
+        fnNetworkData1 = "{}{}{}_{:.2f}.txt".format(fnNetworkData, 
+            sConvLyr, sDropOut, net.BestAccuracyRatio) 
         net.Save_NetworkData(fnNetworkData1)    
-    
+        
+
+        lyrsWeis = net.Get_LayersNeuronsWeightsNum()
+        weiMultiple = 0
+        for wei in lyrsWeis:
+            weiMultiple += wei
+            
         s1 = "\n日期 : {}\n".format(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + \
-             "神經網路結構 : {}\n".format(lyrsNeus)  + \
-             "網路訓練參數 : Loop({}), stepNum({}), learnRatio({:.4f}), lmbda({:.4f})\n".format(loop,stepNum,learnRate,lmbda)  + \
+             "{}, {}\n".format(sConvLyr, sDropOut) + \
+             "LayersName = {}\nLayersNeurons = {}\n".format( 
+                net.Get_LayersName(), net.Get_LayersNeurons() ) +\
+             "LayersWeightsNum = {}\n".format(lyrsWeis) + \
+             "WeightsMultiples = {}\n".format(weiMultiple ) + \
+             "網路訓練參數 : Loop({}), stepNum({}), learnRatio({:.4f}), + \
+               lmbda({:.4f})\n".format(loop,stepNum,learnRate,lmbda)  + \
              "準確度 : 最差({}), 最好({})\n".format(net.WorstAccuracyRatio, net.BestAccuracyRatio)  + \
              "耗費時間(秒) : {:.3f} sec.\n".format( dT ) 
         print(s1)
+        
+        if dT>600: # 超過十分鐘，把結果記下來
+            fn = ".\Log_RvNeuralNetwork.txt"
+            f = open(fn,'a') 
+            f.write(s1)
+            f.close() 
+            print("log added to... \"{}\"".format(fn))
     
-    #%% 預測 ------------------------------------------------
+    # 預測 ------------------------------------------------
     if (not os.path.isfile(fnNetworkData1)): 
         fnNetworkData1= ".\\{}_NetData_DontDelete.txt". \
             format(rn.RvNeuralNetwork.__name__)
     
     
     # Ask DoPredict----------------------------------------------------
-    if DoTraining: DoPredict = ri.Ask_YesNo("要做數字辨識嗎?", "n")   
-    else: DoPredict = True
+    DoPredict=True
+#    if DoTraining: DoPredict = ri.Ask_YesNo("要做數字辨識嗎?", "n")   
+#    else: DoPredict = True
 
     if DoPredict:          
         rn.Debug_Plot = True #ri.Ask_YesNo("要繪出數字嗎?", "n") 
     #    Predict_Digits(net, lstT)
-        Predict_Digits_FromNetworkFile(fnNetworkData1, lstT, rn.Debug_Plot)    
+        pltFn.Predict_Digits_FromNetworkFile(fnNetworkData1, lstT, rn.Debug_Plot)    
     
     
     
@@ -231,12 +268,12 @@ def Main():
     
     
     
-#print(ac.ActivationFunction.afReLU)  #ActivationFunction.afReLU
-#print(ac.ActivationFunction.afReLU.name)   #afReLU
-#print(ac.ActivationFunction.afReLU.value)  #2
-#print(type(ac.ActivationFunction.afReLU))  #<enum 'ActivationFunction'>
-#print(type(ac.ActivationFunction.afReLU.name)) #<class 'str'>
-#print(type(ac.ActivationFunction.afReLU.value))    #<class 'int'>
+#print(ac.EnumActivation.afReLU)  #EnumActivation.afReLU
+#print(ac.EnumActivation.afReLU.name)   #afReLU
+#print(ac.EnumActivation.afReLU.value)  #2
+#print(type(ac.EnumActivation.afReLU))  #<enum 'EnumActivation'>
+#print(type(ac.EnumActivation.afReLU.name)) #<class 'str'>
+#print(type(ac.EnumActivation.afReLU.value))    #<class 'int'>
 
 
 

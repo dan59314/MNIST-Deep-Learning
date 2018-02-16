@@ -61,50 +61,7 @@ from RvNeuralNetworks import *
 import RvAskInput as ri
 import RvMiscFunctions as rf
 import RvActivationCost as ac
-
-#%%
-
-sResult = ["錯誤", "正確"]
-    
-    
-    
-#%%
-def Predict_Digits(net, lstT, plotDigit=True):
-    # 隨機測試某筆數字 ----------------------------------------------    
-    start = time.time() 
-    
-    sampleNum=10000 # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
-    plotNum = 5
-    plotMod = int(sampleNum/plotNum) + 1
-    correctNum=0    
-    failNum = 0
-    for i in range(0, sampleNum):
-        doPlot = (i%plotMod == 0)
-        aId = np.random.randint(0,len(lstT))
-        label, result = net.Predict_Digit(lstT[aId], False)    
-        if label==result: correctNum+=1
-        else: 
-            failNum+=1
-            doPlot = (failNum<plotNum) 
-        if doPlot and plotDigit:
-            rf.Plot_Digit(lstT[aId])
-            print("({}): Label={}, Predict:{} -> {} ".
-              format(i, label,result, sResult[int(label==result)]))   
-    
-    dt = time.time()-start
-    
-    accurRatio = correctNum/sampleNum
-    print("\n預測結果: 正確率({:.3f}),  {}/{}(正確/總數)".
-          format(accurRatio, correctNum, sampleNum))    
-    print("耗費時間(秒) : {:.3f} sec.\n".format(dt))    
-    return accurRatio
-
-    
-def Predict_Digicts_ByNetworkData(fn, lstT, plotDigit=True):
-    if (os.path.isfile(fn)):
-        net = rn.RvNeuralNetwork.Create_Network(fn)
-        return Predict_Digits(net, lstT, plotDigit)        
-        
+import PlotFunctions as pltFn        
         
     
 #%%
@@ -119,13 +76,14 @@ lstT = list(lstT)
     
 fnNetworkData1= ".\\{}_NetData_DontDelete.txt".format(rn.RvNeuralNetwork.__name__)
 fnNetworkData2= ".\\{}_NetData_DropOut.txt".format(rn.RvNeuralNetwork.__name__)
-
-print("DropOut Layer :\n")
-accur2 = Predict_Digicts_ByNetworkData(fnNetworkData2, lstT, False)
-print("FullConnected Layer :\n")
-accur1 = Predict_Digicts_ByNetworkData(fnNetworkData1, lstT)
-print("Accuracy :\n DropOut Layer:  {}".format(accur2))
-print(" FullConnected Layer:  {}".format(accur1))
+fnNetworkData3= ".\\{}_NetData_CnvLyr.txt".format(rn.RvNeuralNetwork.__name__)
+#
+accur1,t1 = pltFn.Predict_Digits_FromNetworkFile(fnNetworkData1, lstT, False)
+accur2,t2 = pltFn.Predict_Digits_FromNetworkFile(fnNetworkData2, lstT, False)
+accur3,t3 = pltFn.Predict_Digits_FromNetworkFile(fnNetworkData3, lstT)
+print("FullConnected Layer:\n  Accu:{}, Time:{:.3} sec\n".format(accur1,t1))
+print("DropOut Layer:\n  Accu:{}, Time:{:.3} sec\n".format(accur2,t2))
+print("Convolution Layer:\n  Accu:{}, Time:{:.3} sec\n".format(accur3,t3))
 
 
 

@@ -94,6 +94,7 @@ import network_All as netAll
 import RvAskInput as ri
 import RvActivationCost as ac
 import RvMiscFunctions as rf
+import PlotFunctions as pltFn
 
 #%%
 DoTraining = False
@@ -158,7 +159,7 @@ enumInitWeisBias = ri.Ask_Enum("選取 Wight/Bias 初始化函數.",
 
 # Ask Activation  ------------------_----------
 enumActivation = ri.Ask_Enum("選取 Activation 類別.", 
-     ac.ActivationFunction,  ac.ActivationFunction.afReLU )
+     ac.EnumActivation,  ac.EnumActivation.afReLU )
     
 
 # Create NetWork ------------------------------------------------

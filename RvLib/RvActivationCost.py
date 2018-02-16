@@ -51,7 +51,8 @@ class EnumDropOutMethod(Enum):
     eoRandom = 1
     eoSmallActivation = 2
     
-class ClassDropOut(object):
+class ClassDropOut(object):    
+    #__name__ = "DropOut"
     """=============================================================
     Static:
     ============================================================="""
@@ -91,14 +92,16 @@ class ClassDropOut(object):
             a = (a>minValue)*a
         return x
     
-    
-class ActivationFunction(Enum):
+#%% Activation Function
+        
+class EnumActivation(Enum):
     afSigmoid = 1
     afReLU = 2
     afTanh = 3
 
 
-class Activation_Sigmoid(object):     
+class Activation_Sigmoid(object):        
+    #__name__ = "Sigmoid"   
     @staticmethod
     def activation(z): # = sigmoid(z)
         """The sigmoid function."""
@@ -113,7 +116,8 @@ class Activation_Sigmoid(object):
         return a * (1.0-a)
     
 
-class Activation_ReLU(object): 
+class Activation_ReLU(object):     
+    #__name__ = "ReLU"
     @staticmethod
     def activation(z): # = ReLU(z)
         return z * (z > 0)
@@ -125,6 +129,7 @@ class Activation_ReLU(object):
         return 1.0 * (a>0)
     
 class Activation_Tanh(object): 
+    #__name__ = "Tanh"
     @staticmethod
     def activation(z): # = tanh(z)
         return np.tanh(z)
@@ -138,12 +143,13 @@ class Activation_Tanh(object):
     
 #%% Cost  ----------------------------------------------------------------
 
-class CostFunction(Enum):
+class EnumCost(Enum):
     cfQuadratic = 1
     cfCrossEntropy = 2
 
 
-class Cost_Quadratic(object):
+class Cost_Quadratic(object):    
+    #__name__ = "Quadratic"
     @staticmethod
     def costValue(a, y):
         # 傳回 cost = (a - y)^2 / 2
@@ -163,7 +169,8 @@ class Cost_Quadratic(object):
         return (a-y) * Activation_Sigmoid.derivation(z)
     
 
-class Cost_CrossEntropy(object): 
+class Cost_CrossEntropy(object):     
+    #__name__ = "CrossEntropy"
     @staticmethod
     def costValue(a, y):
         # 傳回 cost = -Sum( y*ln(a) + (1-y)*ln(1-a) ) / n
@@ -176,13 +183,76 @@ class Cost_CrossEntropy(object):
         return (a-y)
 
 
+#%%  Filter Method
+class EnumCnvFilterMethod(Enum):
+    fmNone = 0
+    fmAverageSum = 1
+    
+class ClassCnvoutionFilter(object):    
+    #__name__ = "Sigmoid"
+    """=============================================================
+    Static:
+    ============================================================="""
+    @staticmethod
+    #### 從檔案讀取 RvNeuralLayer 參數 ----------------------------------------------
+    def Get_CnvFilterValue(oneInputPiece, oneFilter, enumCnvFilter=EnumCnvFilterMethod.fmAverageSum):
+        if (enumCnvFilter==EnumCnvFilterMethod.fmAverageSum):
+            return ClassCnvoutionFilter.__Get_CnvFilterValuese_fmAverageSum( \
+                oneInputPiece, oneFilter)
+        else:
+            return ClassCnvoutionFilter.__Get_CnvFilterValuese_fmAverageSum( \
+                oneInputPiece, oneFilter)
+    
+    @staticmethod
+    def __Get_CnvFilterValues_fmAverageSum(inputPiece_1D, filter_1D):  
+        assert( len(inputPiece_1D) == len(filter_1D) )
+        num = len(inputPiece_1D)
+        return np.dot(inputPiece_1D, filter_1D)/num
+
+
+
+
+
+#%%  Filter Method
+class EnumPoolingMethod(Enum):
+    pmNone = 0
+    pmMaxValue = 1
+    pmAverageSum = 2
+    
+class ClassPooling(object):    
+    #__name__ = "Sigmoid"
+    """=============================================================
+    Static:
+    ============================================================="""
+    @staticmethod
+    #### 從檔案讀取 RvNeuralLayer 參數 ----------------------------------------------
+    def Get_PoolValues(inputX, enumPool=EnumPoolingMethod.pmMaxValue):        
+        if (enumPool==EnumPoolingMethod.pmMaxValue):
+            return ClassPooling.__Get_PoolingValue_pmMaxValue(inputX)
+        if (enumPool==EnumPoolingMethod.pmAverageSum):
+            return ClassPooling.__Get_PoolingValue_pmAverageSum(inputX)
+        else:
+            return ClassPooling.__Get_PoolValuese_pmMaxValue(inputX)
+        
+    @staticmethod
+    def __Get_PoolValues_pmMaxValue(inputX):         
+        return max(inputX)
+    
+    @staticmethod
+    def __Get_PoolValues_pmAverageSum(inputX):   
+        aSum = 0.0
+        for a in inputX: aSum+=a
+        return aSum/len(inputX)
+    
+    
+    
 
 #%% Function Define
 
 def Get_ClassCost(enumCost):   
-    if enumCost==CostFunction.cfQuadratic:
+    if enumCost==EnumCost.cfQuadratic:
         return Cost_Quadratic
-    elif enumCost==CostFunction.cfCrossEntropy:
+    elif enumCost==EnumCost.cfCrossEntropy:
         return Cost_CrossEntropy
     else: 
         return Cost_CrossEntropy       
@@ -190,18 +260,18 @@ def Get_ClassCost(enumCost):
     
 def Get_ClassActivation(enumActivation):
         # __Initial_Weights_Biases_StderrorValue()的效果比__Initial_Weights_Biases_Large()準確率大幅提升
-    if enumActivation==ActivationFunction.afSigmoid:
+    if enumActivation==EnumActivation.afSigmoid:
          # Sigmoid 會造成 訓練停滯，所以必須使用 CrossEntropy 加大
-        return Activation_Sigmoid, Get_ClassCost(CostFunction.cfCrossEntropy)
-    elif enumActivation==ActivationFunction.afReLU:
+        return Activation_Sigmoid, Get_ClassCost(EnumCost.cfCrossEntropy)
+    elif enumActivation==EnumActivation.afReLU:
         # ReLU沒有限制Z 在 0~1 之間，所以不能使用 CrossEntropy 加大
-        return Activation_ReLU, Get_ClassCost(CostFunction.cfQuadratic)
-    elif enumActivation==ActivationFunction.afTanh:
-        return Activation_Tanh, Get_ClassCost(CostFunction.cfQuadratic)
+        return Activation_ReLU, Get_ClassCost(EnumCost.cfQuadratic)
+    elif enumActivation==EnumActivation.afTanh:
+        return Activation_Tanh, Get_ClassCost(EnumCost.cfQuadratic)
     else:
         print("{} not found.".format(enumActivation))
         # ReLU沒有限制Z 在 0~1 之間，所以不能使用 CrossEntropy 加大
-        return Activation_ReLU, Get_ClassCost(CostFunction.cfQuadratic)
+        return Activation_ReLU, Get_ClassCost(EnumCost.cfQuadratic)
 
 
 def softmax(z):

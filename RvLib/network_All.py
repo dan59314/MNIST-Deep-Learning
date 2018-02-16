@@ -123,7 +123,7 @@ class Network_All(object):
     ============================================================="""
     def __init__(self, lyrNeurons, 
                  enumInitWeisBias=Enum_WeiBiasInit.iwbLarge,
-                 enumActivation=ac.ActivationFunction.afSigmoid):
+                 enumActivation=ac.EnumActivation.afSigmoid):
                    
         self.__Assign_FuncInitWeightsBiases(enumInitWeisBias)
         self.Assign_ClassActivation(enumActivation)
