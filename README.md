@@ -64,16 +64,23 @@ Hints :
           eoSmallActivation = 2  -->　kind of MaxOut, dropout the neurons of small activation that is < ratioDropOut
           
   2. Ways to create network:
-  \\# Create non-convolutionLayer network [ 780, 50, 10] 
-      net = rn.RvNeuralNetwork([784,50,10])
+    
+    Create non-convolutionLayer network [ 780, 50, 10] :
+     
+    net = rn.RvNeuralNetwork([784,50,10])
       
-  \\# create convolutionLayer network [ 780, cnvLyr, 50, 10]
-      lyrObjs.append( RvConvolutionLayer(
+      
+    create convolutionLayer network [ 780, cnvLyr, 50, 10] :
+     
+    lyrObjs.append( RvConvolutionLayer(
         inputShape, # eg. [pxlW, pxlH, Channel]
         filterShape, # eg. [pxlW, pxlH, Channel, FilterNum], 
-        filterStride) )        
+        filterStride) )         
+        
        lyrObjs.append( rn.RvNeuralLayer([lyrObjs[-1].Get_NeuronNum), 50))
+       
        lyrObjs.append( rn.RvNeuralLayer( [50, 10])
+       
       net = rn.RvNeuralNetwork(lyrObjs)
       
       net.Train(....)
