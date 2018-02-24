@@ -74,6 +74,12 @@ Example :
 		One digit: https://goo.gl/X8KAGz
 		Multiple Digits:　https://youtu.be/FCE8azMDrMs
         
+------------------------------------------------------------------------------------
+What else you can do?
+
+  1. Train your own hand-writing digits model.
+  2. Train with input of other image set, like alphabat, patten, signs.... etc
+  
 -----------------------------------------------------------------------------------
       
 Hints :
