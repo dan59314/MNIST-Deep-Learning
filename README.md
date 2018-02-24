@@ -71,8 +71,10 @@ Deep Learning codes for MNIST with detailed explanation
   Predict_Digits_RealTime.py
   
     Capture image from camera, recognize digit(s) in realtime.    
-		One digit: https://goo.gl/X8KAGz
-		Multiple Digits:　https://youtu.be/FCE8azMDrMs
+		[One Digits](https://goo.gl/X8KAGz)
+		[![Everything Is AWESOME](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
+		
+		[Multiple Digits](https://youtu.be/FCE8azMDrMs)
         
 ------------------------------------------------------------------------------------
 ## What else you can do?
@@ -128,7 +130,6 @@ Convolution Layer
 [784, ConvLyr, 50, 10] -> 0.9801 ... tested 20 epochs
 
 ----------------------------------------------------------------------------------
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)
 
 ![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg)
 
