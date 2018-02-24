@@ -79,6 +79,7 @@ What else you can do?
 
   1. Train your own hand-writing digits model.
   2. Train with input of other image set, like alphabat, patten, signs.... etc
+  3. Tell me if you feel these codes useful.
   
 -----------------------------------------------------------------------------------
       
