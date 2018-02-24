@@ -1,0 +1,156 @@
+
+ら戳 : 2018-02-14 18:50:57
+竒呼隔挡篶 : [784, 50, 10]
+呼隔癡絤把计 : Loop(100), stepNum(10), learnRatio(0.1000), lmbda(5.0000)
+非絋 : 程畉(0.9372), 程(0.9725)
+禣丁() : 1576.226 sec.
+
+ら戳 : 2018-02-15 21:26:30
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [36, 30, 10]
+LayersWeightsNum = [900, 1080, 300]
+WeightsMultiples = 2280
+呼隔癡絤把计 : Loop(10), stepNum(10), learnRatio(0.1000), +                lmbda(5.0000)
+非絋 : 程畉(0.7688), 程(0.8995)
+禣丁() : 1860.008 sec.
+
+ら戳 : 2018-02-16 09:40:39
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [144, 50, 10]
+LayersWeightsNum = [3600, 7200, 500]
+WeightsMultiples = 11300
+呼隔癡絤把计 : Loop(1), stepNum(10), learnRatio(0.1000), +                lmbda(5.0000)
+非絋 : 程畉(0.9025), 程(0.9025)
+禣丁() : 688.150 sec.
+
+ら戳 : 2018-02-16 21:52:50
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(5), stepNum(10), learnRatio(0.1000), +                lmbda(5.0000)
+非絋 : 程畉(0.9106), 程(0.9564)
+禣丁() : 43635.267 sec.
+
+ら戳 : 2018-02-17 06:23:27
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(1), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.958), 程(0.9707)
+禣丁() : 26622.576 sec.
+
+ら戳 : 2018-02-17 15:43:44
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(5), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9705), 程(0.9753)
+禣丁() : 13723.317 sec.
+
+ら戳 : 2018-02-18 01:43:30
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(10), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9729), 程(0.9763)
+禣丁() : 27160.636 sec.
+
+ら戳 : 2018-02-18 16:32:35
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(10), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9754), 程(0.9776)
+禣丁() : 28278.317 sec.
+
+ら戳 : 2018-02-19 05:12:02
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(10), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9753), 程(0.9774)
+禣丁() : 27787.586 sec.
+
+ら戳 : 2018-02-19 09:02:58
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 50, 10]
+LayersWeightsNum = [14400, 28800, 500]
+WeightsMultiples = 43700
+呼隔癡絤把计 : Loop(1), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.8971), 程(0.8971)
+禣丁() : 1647.926 sec.
+
+ら戳 : 2018-02-20 09:26:47
+, _DropOut_eoSmallActivation
+LayersName = ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons = [50, 50, 50, 10]
+LayersWeightsNum = [39200, 2500, 2500, 500]
+WeightsMultiples = 44700
+呼隔癡絤把计 : Loop(30), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9275), 程(0.9753)
+禣丁() : 1688.199 sec.
+
+ら戳 : 2018-02-20 23:50:43
+_CnvLyr, _DropOut_eoSmallActivation
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 10]
+LayersWeightsNum = [14400, 5760]
+WeightsMultiples = 20160
+呼隔癡絤把计 : Loop(3), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9133), 程(0.9397)
+禣丁() : 9404.735 sec.
+
+ら戳 : 2018-02-21 05:23:06
+_CnvLyr, 
+LayersName = ['RvConvolutionLayer', 'RvNeuralLayer']
+LayersNeurons = [576, 10]
+LayersWeightsNum = [14400, 5760]
+WeightsMultiples = 20160
+呼隔癡絤把计 : Loop(7), stepNum(10), learnRatio(0.1000), +            lmbda(5.0000)
+非絋 : 程畉(0.9572), 程(0.9692)
+禣丁() : 19731.448 sec.
+
+ら戳 : 2018-02-21 21:01:19
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [50, 10]
+LayersWeightsNum: [39200, 500]
+WeightsMultiples: 39700
+呼隔癡絤把计: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+非絋 : 程畉(0.9718), 程(0.9793)
+禣丁(): 0:14:07 sec.
+
+ら戳 : 2018-02-24 09:39:26
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [50, 10]
+LayersWeightsNum: [39200, 500]
+WeightsMultiples: 39700
+呼隔癡絤把计: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+非絋 : 程畉(0.9741), 程(0.9795)
+禣丁(): 0:13:12 sec.
+
+ら戳 : 2018-02-24 09:58:22
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [50, 10]
+LayersWeightsNum: [39200, 500]
+WeightsMultiples: 39700
+呼隔癡絤把计: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+非絋 : 程畉(0.9746), 程(0.9787)
+禣丁(): 0:17:31 sec.
