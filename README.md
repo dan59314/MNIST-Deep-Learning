@@ -111,8 +111,23 @@ Hints :
       	net = rn.RvNeuralNetwork(lyrObjs)
       
       	net.Train(....)
-      
-  
+
+------------------------------------------------------------------------------------      
+Test result
+
+Neural Network -> Accuracy
+[784, 30, 10] -> 0.95
+[784, 60, 10] -> 0.96
+[784, 100, 10] -> 0.976
+[784, 400, 10] -> 0.9779
+
+3 Hidden Layers 
+[784, 50, 50, 50, 10] -> 0.9735
+
+Convolution Layer
+[784, ConvLyr, 50, 10] -> 0.9801 ... tested 20 epochs
+
+
 ------------------------------------------------------------------------------------
 Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
 
