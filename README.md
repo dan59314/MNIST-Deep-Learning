@@ -142,7 +142,7 @@ Convolution Layer
 
 ----------------------------------------------------------------------------------
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg=640x480)
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg){:height="640px" width="400px"}
 
 ![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder02.jpg)
 
