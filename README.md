@@ -75,7 +75,8 @@ Deep Learning codes for MNIST with detailed explanation
 [Recognizing One Digit Video](https://goo.gl/X8KAGz)
 
 [![Recognizing One Digit](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
-		
+	
+[![Recognizing One Digit]<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg" width="480">(https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
 
 [Recognizing Multiple Digits Video](https://youtu.be/FCE8azMDrMs)
 
@@ -142,22 +143,21 @@ Convolution Layer
 
 ----------------------------------------------------------------------------------
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg)
-<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg" width="640">
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder02.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder02.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train01.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train01.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train02.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train02.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train03.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train03.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note01.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note01.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note02.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note02.jpg" width="480">
 
-![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note03.jpg)
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note03.jpg" width="480">
 
 ------------------------------------------------------------------------------------
 ## Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
