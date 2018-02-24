@@ -50,7 +50,7 @@ Deep Learning codes for MNIST with detailed explanation
 ---------------------------------------------------------------------------------
 
 
-Example :  
+##Example :  
 
   Train_NoConvLyr.py
   
@@ -75,7 +75,7 @@ Example :
 		Multiple Digits:　https://youtu.be/FCE8azMDrMs
         
 ------------------------------------------------------------------------------------
-What else you can do?
+##What else you can do?
 
   1. Train your own hand-writing digits model.
   2. Train with input of other image set, like alphabat, patten, signs.... etc
@@ -83,9 +83,9 @@ What else you can do?
   
 -----------------------------------------------------------------------------------
       
-Hints :
+##Hints :
   
-  Methods in RvNeuralNetwork class:
+  ###Methods in RvNeuralNetwork class:
   		Set_DropOutMethod()
   		Show_LayersInfo()
   		Train()
@@ -93,7 +93,7 @@ Hints :
   		Predict_Digit()
   		...
           
-  Ways to create network:    
+  ###Ways to create network:    
     
       Create non-convolutionLayer network [ 780, 50, 10] :    
     		net = rn.RvNeuralNetwork([784,50,10])      
@@ -113,7 +113,7 @@ Hints :
       	net.Train(....)
 
 ------------------------------------------------------------------------------------      
-Test result
+##Test result
 
 Neural Network -> Accuracy
 [784, 30, 10] -> 0.95
@@ -147,7 +147,7 @@ Convolution Layer
 ![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note03.jpg)
 
 ------------------------------------------------------------------------------------
-Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
+##Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
 
 GitHub: https://github.com/dan59314
 
