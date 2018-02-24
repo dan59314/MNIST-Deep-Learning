@@ -74,7 +74,7 @@ Deep Learning codes for MNIST with detailed explanation
 
 [Recognizing One Digit Video](https://goo.gl/X8KAGz)
 
-[![Recognizing One Digit](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
+[![Recognizing One Digit](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG =640x480)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
 		
 
 [Recognizing Multiple Digits Video](https://youtu.be/FCE8azMDrMs)
