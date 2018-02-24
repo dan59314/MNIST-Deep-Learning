@@ -127,6 +127,24 @@ Neural Network -> Accuracy
 Convolution Layer
 [784, ConvLyr, 50, 10] -> 0.9801 ... tested 20 epochs
 
+----------------------------------------------------------------------------------
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder01.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder02.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train01.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train02.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train03.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note01.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note02.jpg)
+
+![image](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note03.jpg)
 
 ------------------------------------------------------------------------------------
 Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
@@ -144,4 +162,3 @@ YouTube : http://www.youtube.com/dan59314/playlist
 Instructables : https://goo.gl/EwRGYA
 
 Free Tools :	http://www.rasvector.url.tw/hot_91270.html
-
