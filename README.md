@@ -53,18 +53,23 @@ Deep Learning codes for MNIST with detailed explanation
 Example :  
 
   Train_NoConvLyr.py
+  
   	Create and train a model for MNIST, then save the mode as a network file.
   
   Train_ConvLyr.py
+  
     Same as above, but allow you to add a covolution layer    
   
   Load_And_Train.py
+  
   	Load an saved network file(model) and keep training without restart all.
   
   Predict_Digits.py 
+  
     Load traing data from MNIST data set, and randomlly predicit numbers insided.
   
   Predict_Digits_RealTime.py
+  
     Capture image from camera, recognize digit(s) in realtime.    
 		One digit: https://goo.gl/X8KAGz
 		Multiple Digits:　https://youtu.be/FCE8azMDrMs
