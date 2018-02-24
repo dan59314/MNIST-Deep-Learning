@@ -79,7 +79,7 @@ Deep Learning codes for MNIST with detailed explanation
 
 [Recognizing Multiple Digits Video](https://youtu.be/FCE8azMDrMs)
 
-[![Recognizing Multiple Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Predict_MultiDigits.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
+[![Recognizing Multiple Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Predict_MultiDigits.JPG)](https://youtu.be/FCE8azMDrMs?t=0s "One Digit Recognizing") 
         
 ------------------------------------------------------------------------------------
 ## What else you can do?
