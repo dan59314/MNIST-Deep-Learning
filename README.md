@@ -72,12 +72,14 @@ Deep Learning codes for MNIST with detailed explanation
   
     Capture image from camera, recognize digit(s) in realtime.    
 
-[One Digits](https://goo.gl/X8KAGz)
+[Recognizing One Digit Video](https://goo.gl/X8KAGz)
 
-[![Everything Is AWESOME](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
+[![Recognizing One Digit](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Realtime_Predict.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
 		
 
-[Multiple Digits](https://youtu.be/FCE8azMDrMs)
+[Recognizing Multiple Digits Video](https://youtu.be/FCE8azMDrMs)
+
+[![Recognizing Multiple Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Predict_MultiDigits.JPG)](https://goo.gl/X8KAGz?t=0s "One Digit Recognizing") 
         
 ------------------------------------------------------------------------------------
 ## What else you can do?
