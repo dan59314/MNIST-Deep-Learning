@@ -80,7 +80,16 @@ Deep Learning codes for MNIST with detailed explanation
 
 [![Recognizing Multiple Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Predict_MultiDigits.JPG)](https://youtu.be/FCE8azMDrMs?t=0s "One Digit Recognizing") 
         
-[![AutoEncoder Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Update_3.png)](https://www.youtube.com/watch?v=hXn95IGmmpI&index=3&list=PLZG_AEGYW1gJ-AQnnq03laagr0CrCpATZ?t=0s "MNIST Encoder / Decoder") 
+  Train_Encoder_Decoder.py   
+   
+     Build Encoder, Decoder
+	    
+  Test_EnDeCoder.py   
+     
+     Encode MNIST digits to code, and decode it back to digits      
+      
+[![AutoEncoder Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Update_3.png)]
+(https://www.youtube.com/watch?v=hXn95IGmmpI&index=3&list=PLZG_AEGYW1gJ-AQnnq03laagr0CrCpATZ?t=0s "MNIST Encoder / Decoder") 
 	
 ------------------------------------------------------------------------------------
 ## What else you can do?
