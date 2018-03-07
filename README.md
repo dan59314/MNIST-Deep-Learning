@@ -175,10 +175,6 @@ Convolution Layer
 
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Spyder02.jpg" width="480">
 
-<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train01.jpg" width="480">
-
-<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train02.jpg" width="480">
-
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/train03.jpg" width="480">
 
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note01.jpg" width="480">
