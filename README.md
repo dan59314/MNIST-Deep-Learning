@@ -80,6 +80,7 @@ Deep Learning codes for MNIST with detailed explanation
 
 [![Recognizing Multiple Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Predict_MultiDigits.JPG)](https://youtu.be/FCE8azMDrMs?t=0s "One Digit Recognizing") 
         
+[![AutoEncoder Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Update_3.png)](https://www.youtube.com/watch?v=hXn95IGmmpI&index=3&list=PLZG_AEGYW1gJ-AQnnq03laagr0CrCpATZ?t=0s "MNIST Encoder / Decoder") 
 	
 ------------------------------------------------------------------------------------
 ## What else you can do?
@@ -173,7 +174,10 @@ Convolution Layer
 
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note03.jpg" width="480">
 
+AutoEncoder
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Update_3.png" width="480">
+
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/AutoEncode01.JPG" width="480">
 
 ------------------------------------------------------------------------------------
 ## Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
