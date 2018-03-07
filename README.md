@@ -119,6 +119,21 @@ Deep Learning codes for MNIST with detailed explanation
       
       	net.Train(....)
 
+  ### Build Encoder, Decoder:
+      #### Train_Encoder_Decoder.py   # Build Encoder, Decoder
+      
+      encoder, decoder = net.Build_Encoder_Decoder(lstTrain, loop, stepNum, learnRate, lmbda, True, digitIdOnly)
+	    
+      #### Test_EnDeCoder.py   # Encode MNIST digits to code, and decode it back to digits      
+      
+      decoder = rn.RvNeuralEnDeCoder.Create_Network(fn1)  # Create Decoder
+      
+      encoder = rn.RvNeuralEnDeCoder.Create_Network(fn2)  # Create Encoder 
+      
+      code = encoder.Get_OutputValues(input)  # Encode input to code
+      
+      output = decoder.Get_OutputValues(code)  # Decode code to digit  
+      
 ------------------------------------------------------------------------------------      
 ## Test result
 
@@ -157,6 +172,8 @@ Convolution Layer
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note02.jpg" width="480">
 
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Note03.jpg" width="480">
+
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Update_3.png" width="480">
 
 ------------------------------------------------------------------------------------
 ## Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
