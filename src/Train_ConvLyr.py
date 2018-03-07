@@ -162,6 +162,14 @@ def Main():
         # Create Layer Object array -------------------------------
         for iLyr in range(cnvLyrSId, len(lyrsNeus)-1):
             lyrObjs.append( rn.RvNeuralLayer([lyrsNeus[iLyr], lyrsNeus[iLyr+1]]) )
+        
+#        lyrObjs.append( rn.RvNeuralLayer([784, 100]) )        
+#        lyrObjs.append(rn.RvConvolutionLayer(
+#                [10,10,1], # eg. [pxlW, pxlH, Channel]
+#                [5,5,1,1], # eg. [pxlW, pxlH, Channel, FilterNum], 
+#                1) )
+#        lyrObjs.append( rn.RvNeuralLayer([lyrObjs[-1].Get_NeuronsNum(),10]) )
+            
         net = rn.RvNeuralNetwork(lyrObjs)
         
         
@@ -204,8 +212,10 @@ def Main():
         
         dT = time.time()-start
         
-        fnSaved = rf.Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT)
+        fnSaved = rf.Save_NetworkDataFile(net, fnNetworkData, 
+                loop,stepNum,learnRate,lmbda, dT, ".nnf")
        
+        print("Filter Share Weights = {}\n".format(rn.gFilterShareWeights) )
     
     
     # Ask DoPredict----------------------------------------------------
@@ -214,10 +224,10 @@ def Main():
         if (os.path.isfile(fnSaved)): 
             fn1 = fnSaved
         else:
-            fn1= ".\\{}_NetData_DontDelete.txt".format(rn.RvNeuralNetwork.__name__)
+            fn1= ".\\NetData\\{}_NetData_DontDelete.nnf".format(rn.RvNeuralNetwork.__name__)
         rn.Debug_Plot = True #ri.Ask_YesNo("Plot Digits?", "n") 
     #    Predict_Digits(net, lstT)
-        pltFn.Predict_Digits_FromNetworkFile(fn1, lstT, rn.Debug_Plot)    
+        rf.Predict_Digits_FromNetworkFile(fn1, lstT, rn.Debug_Plot)    
     
     
     

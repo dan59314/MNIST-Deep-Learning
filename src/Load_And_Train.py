@@ -77,7 +77,7 @@ def Main():
     
     #mnist.pkl.gz(50000） Accuracy 0.96 
     #mnist_expanded.pkl.gz(250000） Accuracy 0.97 
-    fn = "..\\data\\mnist_expanded.pkl.gz"  #".datamnist_expanded.pkl.gz"
+    fn = "..\\data\\mnist.pkl.gz"  # "..\\data\\mnist_expanded.pkl.gz"
     lstTrain, lstV, lstT =  mnist_loader.load_data_wrapper(fn)
     lstTrain = list(lstTrain)
     lstV = list(lstV)
@@ -110,8 +110,8 @@ def Main():
     # Load net file and continune training--
     fns = []
     for file in os.listdir(".\\"):
-        if file.endswith(".txt"):
-           fns.append(file)
+        if file.endswith(".txt"): fns.append(file)
+        
     aId = ri.Ask_SelectItem("Select network file", fns, 0)    
     fn1= fns[aId]
     while (True):

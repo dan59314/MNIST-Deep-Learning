@@ -283,3 +283,74 @@ def softmax(z):
         return e / np.sum(e, axis=0)
     else:  
         return e / np.array([np.sum(e, axis=1)]).T  # ndim = 2     
+    
+    
+    
+    
+    #%% ***************************************************************************
+def Get_NoneDropOutMask(dim, ratioDrop):
+    if ratioDrop < 0. or ratioDrop >= 1:#ratioDropout是概率值，必須在0~1之間  
+        raise Exception('Dropout ratioDropout must be in interval [0, 1[.')  
+    ratioRetain = 1. - ratioDrop  
+    #我們通過binomial函數，生成與x一樣的維數向量。binomial函數就像拋硬幣一樣，我們可以把每個神經元當做拋硬幣一樣  
+    #硬幣 正面的概率為p，n表示每個神經元試驗的次數  
+    #因為我們每個神經元只需要拋一次就可以了所以n=1，size參數是我們有多少個硬幣。
+    rng = np.random.RandomState(1234) #int(time.time())) #(1234)
+
+    x = np.ones((dim,1))
+    retain_norms=rng.binomial(n=1, p= ratioRetain, size=x.shape)#即將生成一個0、1分佈的向量，0表示這個神經元被屏蔽，不工作了，也就是dropout了  
+    
+    return retain_norms
+
+
+
+def Get_DropOutMask1(dim, ratioDrop):
+    if ratioDrop < 0. or ratioDrop >= 1:#ratioDropout是概率值，必須在0~1之間  
+        raise Exception('Dropout ratioDropout must be in interval [0, 1[.')  
+    ratioRetain = 1. - ratioDrop  
+    #我們通過binomial函數，生成與x一樣的維數向量。binomial函數就像拋硬幣一樣，我們可以把每個神經元當做拋硬幣一樣  
+    #硬幣 正面的概率為p，n表示每個神經元試驗的次數  
+    #因為我們每個神經元只需要拋一次就可以了所以n=1，size參數是我們有多少個硬幣。
+    rng = np.random.RandomState(1234) #int(time.time())) #(1234)
+
+    x = np.ones((dim,1))
+    retain_norms=rng.binomial(n=1, p= ratioRetain, size=x.shape)#即將生成一個0、1分佈的向量，0表示這個神經元被屏蔽，不工作了，也就是dropout了  
+    
+    ones = np.ones(x.shape, dtype=int)
+    drop_norms = np.bitwise_xor(ones, retain_norms)  
+    return ratioDrop, drop_norms, ratioRetain, retain_norms
+
+def Get_Valuses_ByMask(x, norms, ratio):
+    x *= norms# 0、1與x相乘，我們就可以屏蔽某些神經元，讓它們的值變為0  
+    # print("x*norms = \n\t{}".format(x))      
+    x /= ratio  
+    # print("x*norms/remainRatio = \n\t{}".format(x))  
+    return x  
+    
+    
+def Get_NoneDropOutValues(x, ratioDrop):  
+    if ratioDrop < 0. or ratioDrop >= 1:#ratioDropout是概率值，必須在0~1之間  
+        raise Exception('Dropout ratioDropout must be in interval [0, 1[.')  
+    ratioRetain = 1. - ratioDrop  
+    #我們通過binomial函數，生成與x一樣的維數向量。binomial函數就像拋硬幣一樣，我們可以把每個神經元當做拋硬幣一樣  
+    #硬幣 正面的概率為p，n表示每個神經元試驗的次數  
+    #因為我們每個神經元只需要拋一次就可以了所以n=1，size參數是我們有多少個硬幣。  
+    rng = np.random.RandomState(1234) #int(time.time())) #(1234)
+
+    norms=rng.binomial(n=1, p= ratioRetain, size=x.shape)#即將生成一個0、1分佈的向量，0表示這個神經元被屏蔽，不工作了，也就是dropout了  
+    # print("norms = \n\t{}".format(norms)) 
+    
+    x *= norms# 0、1與x相乘，我們就可以屏蔽某些神經元，讓它們的值變為0  
+    # print("x*norms = \n\t{}".format(x))  
+    
+    x /= ratioRetain  
+    # print("x*norms/remainRatio = \n\t{}".format(x))  
+    return x  
+
+
+#保留較大權種，特徵特別明顯的 ----------------------
+def Get_BigValues(x, minValue=0.5):
+    
+    for a in x:
+        a = (a>minValue)*a
+    return x

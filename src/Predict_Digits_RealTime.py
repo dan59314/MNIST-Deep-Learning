@@ -64,7 +64,8 @@ from RvNeuralNetworks import *
 import RvAskInput as ri
 import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
-import PlotFunctions as pltFn        
+import PlotFunctions as pltFn   
+import RvFileIO as rfi         
         
 
 #%%
@@ -196,13 +197,10 @@ def Predict_All(image, contours, imgW,imgH):
                 
 #%%
 
-#fns = []
-#for file in os.listdir(".\\"):
-#    if file.endswith(".txt"):
-#        fns.append(file)
-#aId = ri.Ask_SelectItem("Select network file", fns, 0)    
-#fn1= fns[aId]
-fn1 = ".\RvNeuralNetwork_NetData_NonCnvLyr.txt"
+fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".nnf"])
+aId = ri.Ask_SelectItem("Select network file", fn0s, 0)    
+fn1= fns[aId]
+#fn1 = ".\RvNeuralNetwork_NetData_CnvLyr_ShareWeights.nnf"
 
 if (os.path.isfile(fn1)):
     net = rn.RvNeuralNetwork.Create_Network(fn1)
@@ -241,7 +239,7 @@ if (os.path.isfile(fn1)):
                 cv2.imshow('image',image)
                     
                 if cv2.waitKey(1) & 0xFF == 27:  #esc   ord('s'):
-                    cv2.imwrite('test.jpg',image)
+                    #cv2.imwrite('test.jpg',image)
                     break
             except ValueError:
                 break

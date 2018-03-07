@@ -59,7 +59,7 @@ import matplotlib.cm as cmn
 # prvaite libraries---------------------------------------------
 import mnist_loader
 import RvNeuralNetworks as rn
-from RvNeuralNetworks import *
+#from RvNeuralNetworks import *
 import RvAskInput as ri
 import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
@@ -163,11 +163,12 @@ def Main():
         
         dT = time.time()-start
         
-        rf.Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT)
+        fnNetworkData1 = rf.Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,
+            learnRate,lmbda, dT, ".nnf")
     
     # Prediction ------------------------------------------------
     if (not os.path.isfile(fnNetworkData1)): 
-        fnNetworkData1= ".\\{}_NetData_DontDelete.txt". \
+        fnNetworkData1= ".\\NetData\\{}_NetData_DontDelete.nnf". \
             format(rn.RvNeuralNetwork.__name__)
     
     
@@ -179,7 +180,7 @@ def Main():
     if DoPredict:          
         rn.Debug_Plot = True #ri.Ask_YesNo("Plot Digits?", "n") 
     #    Predict_Digits(net, lstT)
-        pltFn.Predict_Digits_FromNetworkFile(fnNetworkData1, lstT, rn.Debug_Plot)    
+        rf.Predict_Digits_FromNetworkFile(fnNetworkData1, lstT, rn.Debug_Plot)    
     
     
     

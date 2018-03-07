@@ -62,7 +62,8 @@ from RvNeuralNetworks import *
 import RvAskInput as ri
 import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
-import PlotFunctions as pltFn        
+import PlotFunctions as pltFn    
+import RvFileIO as rfi    
         
     
 #%%
@@ -78,14 +79,12 @@ lstTrain = list(lstTrain)
 lstV = list(lstV)
 lstT = list(lstT)
 
-fns = []
-for file in os.listdir(".\\"):
-    if file.endswith(".txt"):
-        fns.append(file)
-aId = ri.Ask_SelectItem("Select Network file", fns, 0)    
+
+fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".nnf"])
+aId = ri.Ask_SelectItem("Select Network file", fn0s, 0)    
 fn1= fns[aId]
     
-accur1,t1 = pltFn.Predict_Digits_FromNetworkFile(fn1, lstT, True)
+accur1,t1 = rf.Predict_Digits_FromNetworkFile(fn1, lstT, True)
 print("File : \"{}\"\n  nmcu:{}, Time:{:.3} sec\n".format(fn1,accur1,t1))
 
 

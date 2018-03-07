@@ -37,6 +37,7 @@ Created on Thu Feb  8 14:50:04 2018
 
 
 #%%
+import os
 import time
 from datetime import datetime, timedelta
 
@@ -46,6 +47,9 @@ import matplotlib.pyplot as plt
 
 
 import RvAskInput as ri
+import RvNeuralNetworks as rn
+import PlotFunctions as pltFn
+
 
 
 
@@ -193,7 +197,7 @@ def Set_FigureText(plot, sTitle, sX, sY):
     plot.xlabel(sX)
     plot.ylabel(sY)
     
-def Plot_Digit(digit, result=-1, label=-1):
+def Plot_Digit(digit, result=-1, label=-1, saveFn=""):
     # digit[0] = pixels[784]
     # oneImgDigig[1] = label or labels[10]
     pixels = np.array(digit[0]*255, dtype='uint8')
@@ -211,13 +215,18 @@ def Plot_Digit(digit, result=-1, label=-1):
     # Plot
     plt.title('result={},  Label={}'.format(result, label))
     plt.imshow(pixels, cmap='gray')
+    if ""!=saveFn: plt.savefig(saveFn) #要放在 plt.show()之前才能正確存出圖形
     plt.show()
     
     
+    
+
 
 def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
                   test_cost, n_train, n_test,training_accuracy,test_accuracy,
                   blShow=True, blSave=True, frId=None, toId=None):      
+    
+    if (None==training_cost):return
     
     cMinLoopToPlotDot = 30
 
@@ -229,44 +238,85 @@ def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
     loop = len(loops)
     
     # 劃出圖表 --------------------
-    if loop<cMinLoopToPlotDot:
-        plt.plot(loops[frId:toId], training_cost[frId:toId],"ro-", test_cost[frId:toId],"bo-")
-    else:
-        plt.plot(loops[frId:toId], training_cost[frId:toId],"r-", test_cost[frId:toId],"b-") # "ro"畫紅點， "b--"畫藍色虛線
-    # 顯示 Train, Test 數量
-    font['color'] = 'green'
-    plt.text(loops[0],training_cost[-1], "Train={}, Test={}".
+    if (None!=test_cost):
+        if loop<cMinLoopToPlotDot:
+            plt.plot(loops[frId:toId], training_cost[frId:toId],"ro-", test_cost[frId:toId],"bo-")
+        else:
+            plt.plot(loops[frId:toId], training_cost[frId:toId],"r-", test_cost[frId:toId],"b-") # "ro"畫紅點， "b--"畫藍色虛線
+   
+        # 顯示 Train, Test 數量
+        font['color'] = 'green'
+        plt.text(loops[0],training_cost[-1], "Train={}, Test={}".
               format(n_train,n_test), **font)  # loop//2 = round(loop/2)
-    # 顯示線段最後的文字
-    font['color'] = 'red'
-    plt.text(loops[-1],training_cost[-1], r'$training$', **font)
-    font['color'] = 'blue'
-    plt.text(loops[-1],test_cost[-1], r'$test$', **font)
-    if True==blSave: 
-        plt.savefig("{}_Cost.png".format(fn), format = "png")
-    if True==blShow: 
-        plt.show() 
     
-    Set_FigureText(plt, "Accuracy (lr={:.4f}, lmbda={:.4f})".
-                   format(learnRate,lmbda),
-                   "loop", "accuracy")
-    accur_train = np.divide(training_accuracy,n_train)
-    accur_test = np.divide(test_accuracy,n_test)
-    # 劃出圖表 --------------------
-    if loop<cMinLoopToPlotDot:
-        plt.plot(loops[frId:toId], accur_train[frId:toId], "ro-", accur_test[frId:toId], "bo-")
+         # 顯示線段最後的文字
+        font['color'] = 'red'
+        plt.text(loops[-1],training_cost[-1], r'$training$', **font)
+        font['color'] = 'blue'
+        plt.text(loops[-1],test_cost[-1], r'$test$', **font)
+        if True==blSave: 
+            plt.savefig("{}_Cost.png".format(fn), format = "png")
+        if True==blShow: 
+            plt.show() 
+        
+        Set_FigureText(plt, "Accuracy (lr={:.4f}, lmbda={:.4f})".
+                       format(learnRate,lmbda),
+                       "loop", "accuracy")
+        accur_train = np.divide(training_accuracy,n_train)
+        accur_test = np.divide(test_accuracy,n_test)
+        # 劃出圖表 --------------------
+        if loop<cMinLoopToPlotDot:
+            plt.plot(loops[frId:toId], accur_train[frId:toId], "ro-", accur_test[frId:toId], "bo-")
+        else:
+            plt.plot(loops[frId:toId], accur_train[frId:toId], "r-", accur_test[frId:toId], "b-")
+        
+        # 顯示 Train, Test 數量
+        font['color'] = 'green'
+        plt.text(loops[0],accur_train[-1], "Train={}, Test={}".
+                 format(n_train,n_test), **font)  # loop//2 = round(loop/2)
+        # 顯示線段最後的文字
+        font['color'] = 'red'
+        plt.text(loops[-1], accur_train[-1], r'$training$', **font)
+        font['color'] = 'blue'
+        plt.text(loops[-1], accur_test[-1], r'$test$', **font)
+        
     else:
-        plt.plot(loops[frId:toId], accur_train[frId:toId], "r-", accur_test[frId:toId], "b-")
-    
-    # 顯示 Train, Test 數量
-    font['color'] = 'green'
-    plt.text(loops[0],accur_train[-1], "Train={}, Test={}".
-             format(n_train,n_test), **font)  # loop//2 = round(loop/2)
-    # 顯示線段最後的文字
-    font['color'] = 'red'
-    plt.text(loops[-1], accur_train[-1], r'$training$', **font)
-    font['color'] = 'blue'
-    plt.text(loops[-1], accur_test[-1], r'$test$', **font)
+        if loop<cMinLoopToPlotDot:
+            plt.plot(loops[frId:toId], training_cost[frId:toId],"ro-")
+        else:
+            plt.plot(loops[frId:toId], training_cost[frId:toId],"r-") # "ro"畫紅點， "b--"畫藍色虛線
+       
+        font['color'] = 'green' 
+        plt.text(loops[0],training_cost[-1], "Train={}".
+              format(n_train), **font)  # loop//2 = round(loop/2)
+        
+         # 顯示線段最後的文字
+        font['color'] = 'red'
+        plt.text(loops[-1],training_cost[-1], r'$training$', **font)
+        if True==blSave: 
+            plt.savefig("{}_Cost.png".format(fn), format = "png")
+        if True==blShow: 
+            plt.show() 
+        
+        Set_FigureText(plt, "Accuracy (lr={:.4f}, lmbda={:.4f})".
+                       format(learnRate,lmbda),
+                       "loop", "accuracy")
+        accur_train = np.divide(training_accuracy,n_train)
+        
+        # 劃出圖表 --------------------
+        if loop<cMinLoopToPlotDot:
+            plt.plot(loops[frId:toId], accur_train[frId:toId], "ro-")
+        else:
+            plt.plot(loops[frId:toId], accur_train[frId:toId], "r-")
+        
+        # 顯示 Train, Test 數量
+        font['color'] = 'green'
+        plt.text(loops[0],accur_train[-1], "Train={}".
+                 format(n_train), **font)  # loop//2 = round(loop/2)
+        # 顯示線段最後的文字
+        font['color'] = 'red'
+        plt.text(loops[-1], accur_train[-1], r'$training$', **font)
+   
     if True==blSave: 
         plt.savefig("{}_Accuracy.png".format(fn), format = "png")
     if True==blShow: 
@@ -275,20 +325,20 @@ def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
         
         
         
-def Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT):
+def Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT, fileExt=".txt"):
     # 劃出 Neurons Weights
-    iLyr=0
-    print("Layer({}) : ".format(iLyr))
-    aId = np.random.randint(0, len(net.NeuralLayers[iLyr].NeuronsWeights) )
-    net.NeuralLayers[iLyr].Plot_NeuronsWeights([aId,aId+1])
+#    iLyr=0
+#    print("Layer({}) : ".format(iLyr))
+#    aId = np.random.randint(0, len(net.NeuralLayers[iLyr].NeuronsWeights) )
+#    net.NeuralLayers[iLyr].Plot_NeuronsWeights([aId,aId+1])
     
     # 存出網路參數檔案
     sConvLyr, sDropOut = "", ""
     sConvLyr = "_CnvLyr" if ([]!=net.Get_ConvolutionLayerID()) else ""        
     sDropOut = "_DropOut_{}".format(net.NetEnumDropOut.name) \
         if net.NetEnableDropOut else ""        
-    fnSave = "{}{}{}_{:.2f}.txt".format(fnNetworkData, 
-        sConvLyr, sDropOut, net.BestAccuracyRatio) 
+    fnSave = "{}{}{}_{:.2f}{}".format(fnNetworkData, 
+        sConvLyr, sDropOut, net.BestAccuracyRatio,fileExt) 
     net.Save_NetworkData(fnSave)    
     
 
@@ -320,6 +370,92 @@ def Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT):
 
 
 
+
+
+sResult = ["錯誤", "正確"]
+
+def Predict_Digits(net, lstT, plotDigit=True, onlyDigit=-1):
+    # 隨機測試某筆數字 ----------------------------------------------    
+    start = time.time() 
+    
+    sampleNum=10000 # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
+    plotNum = 5
+    plotMod = int(sampleNum/plotNum) + 1
+    correctNum=0    
+    failNum = 0
+    for i in range(0, sampleNum):
+      if (lstT[i][1]==onlyDigit) or (onlyDigit<0):
+        doPlot = (i%plotMod == 0)
+        aId = np.random.randint(0,len(lstT))
+        label, result, ratio = net.Predict_Digit(lstT[aId], False)    
+        if label==result: correctNum+=1
+        else: 
+            doPlot = (failNum<plotNum) 
+            failNum+=1
+        if doPlot and plotDigit:
+            Plot_Digit(lstT[aId], result, label)
+            print("({}): Label={}, Predict:{}({}) -> {} ".
+              format(i, label,result,ratio, sResult[int(label==result)]))   
+    
+    dt = time.time()-start
+    
+    accurRatio = correctNum/sampleNum
+    print("\nResult: Accuracy({:.3f}),  {}/{}(Correct/Total)".
+          format(accurRatio, correctNum, sampleNum))    
+    print("Elapsed(seconds)) : {:.3f} sec.\n".format(dt))    
+    return accurRatio,dt
+
+    
+def Predict_Digits_FromNetworkFile(fn, lstT, plotDigit=True, onlyDigit=-1):
+    if (os.path.isfile(fn)):
+        net = rn.RvNeuralNetwork.Create_Network(fn)
+        if (None==net): return 0.0, 0.0    
+        return Predict_Digits(net, lstT, plotDigit, onlyDigit)    
+
+
+
+
+def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
+        noiseStrength=0.0):
+    # 隨機測試某筆數字 ----------------------------------------------    
+    #start = time.time() 
+    
+    pxlW = int(np.sqrt(len(lstT[0][0])))
+    
+    # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
+    for i in range(0, sampleNum):
+        aId = np.random.randint(0,len(lstT))
+        digitId = lstT[aId][1]
+        
+        oneInput =lstT[aId][0]
+        #rf.Plot_Digit([oneInput.transpose(), lstT[aId][1] ] )  #(1x784)        
+        
+        if (noiseStrength>0.0):
+            oneInput = rn.RvBaseNeuralNetwork.Add_Noise(oneInput, noiseStrength)
+            
+        encode = encoder.Get_OutputValues(oneInput) #(784x1)          
+                          
+        #output = decoder.Plot_Output(encode) #(784x1)    
+        output = decoder.Get_OutputValues(encode)    
+        
+        print("Input({}) -> Output : Accuracy={:.3f}".
+              format(digitId, decoder.Get_Accuracy_EnDeCoder(oneInput, output)))  
+        
+        if os.path.isdir(saveImgPath):
+            imgFn = "{}_{}.png".format(saveImgPath, i)
+        else:
+            imgFn = ""
+            
+        
+        pltFn.Plot_Images(np.array([oneInput.transpose().reshape(pxlW,pxlW)*255,
+                output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", imgFn)
+    
+#        pltFn.Plot_Images(np.array([oneInput.transpose()*255,
+#                output.transpose()*255]),1,2)
+        
+    #dt = time.time()-start                
+                
+                
 #%% Initial Functions
 
 

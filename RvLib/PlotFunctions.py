@@ -53,63 +53,106 @@ import matplotlib.cm as cmn
 
 
 # prvaite libraries---------------------------------------------
-import mnist_loader
-import RvNeuralNetworks as rn
-from RvNeuralNetworks import *
-import RvAskInput as ri
-import RvMiscFunctions as rf
-import RvNeuNetworkMethods as nm
-from RvNeuNetworkMethods import EnumDropOutMethod as drpOut
-
 
 
 #%%%  Function Section
+def Plot_Figures(figures, nrows = 1, ncols=1):
+    """Plot a dictionary of figures.
 
-sResult = ["錯誤", "正確"]
+    Parameters
+    ----------
+    figures : <title, figure> dictionary
+    ncols : number of columns of subplots wanted in the display
+    nrows : number of rows of subplots wanted in the figure
+    """
     
     
-    
-#%%
-def Predict_Digits(net, lstT, plotDigit=True):
-    # 隨機測試某筆數字 ----------------------------------------------    
-    start = time.time() 
-    
-    sampleNum=10000 # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
-    plotNum = 1
-    plotMod = int(sampleNum/plotNum) + 1
-    correctNum=0    
-    failNum = 0
-    for i in range(0, sampleNum):
-        doPlot = (i%plotMod == 0)
-        aId = np.random.randint(0,len(lstT))
-        label, result = net.Predict_Digit(lstT[aId], False)    
-        if label==result: correctNum+=1
-        else: 
-            doPlot = (failNum<plotNum) 
-            failNum+=1
-        if doPlot and plotDigit:
-            rf.Plot_Digit(lstT[aId], reslt, label)
-            print("({}): Label={}, Predict:{} -> {} ".
-              format(i, label,result, sResult[int(label==result)]))   
-    
-    dt = time.time()-start
-    
-    accurRatio = correctNum/sampleNum
-    print("\nResult: Accuracy({:.3f}),  {}/{}(Correct/Total)".
-          format(accurRatio, correctNum, sampleNum))    
-    print("Elapsed(seconds)) : {:.3f} sec.\n".format(dt))    
-    return accurRatio,dt
+    nImg = len(figures)
+    nrows = int(nImg / ncols) + (1 * (nImg%ncols>0) )
 
+    fig, axeslist = plt.subplots(ncols=ncols, nrows=nrows)
     
-def Predict_Digits_FromNetworkFile(fn, lstT, plotDigit=True):
-    if (os.path.isfile(fn)):
-        net = rn.RvNeuralNetwork.Create_Network(fn)
-        if (None==net): return 0.0, 0.0    
-        return Predict_Digits(net, lstT, plotDigit)    
+    for ind,title in zip(range(nImg), figures):
+        figures[title] = np.array(figures[title], dtype='uint8')
+        axeslist.ravel()[ind].imshow(figures[title], cmap=plt.gray())
+        #axeslist.ravel()[ind].set_title(title)
+        #img.set_cmap('hot') #讓圖形呈現紅色調
+        axeslist.ravel()[ind].set_axis_off()
+        
+    for ind in range(nImg,nrows*ncols):
+        axeslist.ravel()[ind].imshow([[]], cmap=plt.gray())
+        #axeslist.ravel()[ind].set_title(title)
+        #img.set_cmap('hot') #讓圖形呈現紅色調
+        axeslist.ravel()[ind].set_axis_off()
+        
+    plt.tight_layout() # optional
 
+""" 
+Examples:
+number_to_stop = 8
+figures = {}
+for i in range(number_to_stop):
+    index = random.randint(0, n_train-1)
+    figures[y_train[index]] = X_train[index]
+
+plot_figures(figures, 2, 4)
+"""
 
 
+def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10):
+    """Plot a dictionary of figures.
 
+    Parameters
+    ----------
+    images : Array[0..n] of image[w][h]
+    ncols : number of columns of subplots wanted in the display
+    nrows : number of rows of subplots wanted in the figure
+    
+    w=10
+    h=10
+    fig=plt.figure(figsize=(8, 8))
+    columns = 4
+    rows = 5
+    for i in range(1, columns*rows +1):
+        img = np.random.randint(10, size=(h,w))
+        fig.add_subplot(rows, columns, i)
+        plt.imshow(img)
+    plt.show()
+    """
+    
+#    for i in range(len(images)):
+#        if images[i].shape[0]==1:
+#            w = int(np.sqrt(images[i].shape[1]))
+#            images[i].reshape(w,w)
+    
+    images = np.array(images, dtype='uint8')
+    
+    nImg = len(images)
+#    pxlH = len(images[0][0])
+#    pxlW = len(images[0][1])
+    nrows = int(nImg / ncols) + (1 * (nImg%ncols>0) )
+    """matplotlib.pyplot.figure(num=None, figsize=None, dpi=None, facecolor=None, 
+        edgecolor=None, frameon=True, FigureClass=<class 'matplotlib.figure.Figure'>, 
+        clear=False, **kwargs)
+    """
+    
+    idx = 0
+    fig=plt.figure(figsize=(figW_Inch,figW_Inch))
+#    if ""!=sTitle: fig.suptitle(sTitle)
+    for i in range(1, ncols*nrows +1):
+        fig.add_subplot(nrows,ncols, i)
+        plt.axis('off')
+        if (idx>=nImg):
+          plt.imshow([[]])
+        else:
+          plt.imshow(images[idx], cmap=plt.gray())
+        idx+=1
+        
+    #img.set_cmap('hot')
+    if ""!=saveFn: plt.savefig(saveFn, bbox_inches='tight') #要放在 plt.show()之前才能正確存出圖形  
+   
+    plt.show()
+    
 
 
 
