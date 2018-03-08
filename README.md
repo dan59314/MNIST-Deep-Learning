@@ -151,7 +151,7 @@ Deep Learning codes for MNIST with detailed explanation
 ------------------------------------------------------------------------------------      
 ## Test result
 
-Neural Network -> Accuracy
+### Neural Network -> Accuracy
 
 [784, 30, 10] -> 0.95
 
@@ -165,9 +165,15 @@ Neural Network -> Accuracy
 
 [784, 50, 50, 50, 10] -> 0.9735
 
-Convolution Layer
+### Convolution Layer -> Accuracy
 
 [784, ConvLyr, 50, 10] -> 0.9801 ... tested 20 epochs
+
+### Encoder / Decoder -> Accuracy
+
+[784, 256, 128, 10, 128, 256, 784 ] -> 0.9312 ... tested 10 epochs
+
+[784, 400, 20, 400, 784] -> 0.9526 ... tested 5 epochs
 
 ----------------------------------------------------------------------------------
 
