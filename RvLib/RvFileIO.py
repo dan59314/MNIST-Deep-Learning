@@ -101,8 +101,38 @@ def Delete_Files(sDir, delFileExts=[], deleteSubDir=False):
                 for name in dirs:
                     os.rmdir(os.path.join(root, name))
                 
+def ExtractFilePath(absFn):
+    #return os.path.abspath(os.path.dirname(absFn))
+    return os.path.split(absFn)[0]
+        
+    
+def ExtractFileName(absFn):
+    #return str(absFn).split('\\')[-1:][0]
+    return os.path.split(absFn)[1]
 
 
+def ExtractFileExt(absFn):
+    #fn = ExtractFileName(absFn)
+    #return str(fn).split('.')[1]    
+    filename_w_ext = os.path.basename(absFn)
+    filename, file_extension = os.path.splitext(filename_w_ext)
+    return file_extension
+    
+def ForceDir(path):
+    if not os.path.isdir(path):
+        os.mkdir(path) 
+        
+def FileExists(absFn):
+    return os.path.isfile(absFn)
+    
+def PathExists(path):
+    return os.path.isdir(path)
+
+def OpenFile(absFn):
+    os.system(r'start ' + absFn)
+    
+    
+    
 #%%% Test Section
 
 

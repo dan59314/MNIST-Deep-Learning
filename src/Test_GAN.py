@@ -118,8 +118,8 @@ if (os.path.isfile(fn1)):
 #    label, result = net.Predict_Digit([inputX,1], False)   
     
     
-    decoder = rn.RvNeuralEnDeCoder.Create_Network(fn1)
-    encoder = rn.RvNeuralEnDeCoder.Create_Network(fn2)
+    decoder = rn.RvNeuralEnDeCoder(fn1)
+    encoder = rn.RvNeuralEnDeCoder(fn2)
     
     imgPath = decoder.VideoImagePath
     

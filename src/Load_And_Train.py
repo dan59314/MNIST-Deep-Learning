@@ -65,6 +65,7 @@ import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
 from RvNeuNetworkMethods import EnumDropOutMethod as drpOut
 import PlotFunctions as pltFn
+import RvFileIO as rfi
 
 
 
@@ -73,68 +74,86 @@ import PlotFunctions as pltFn
         
 
 def Main():
-    #Load MNIST ****************************************************************
     
-    #mnist.pkl.gz(50000） Accuracy 0.96 
-    #mnist_expanded.pkl.gz(250000） Accuracy 0.97 
-    fn = "..\\data\\mnist.pkl.gz"  # "..\\data\\mnist_expanded.pkl.gz"
-    lstTrain, lstV, lstT =  mnist_loader.load_data_wrapper(fn)
-    lstTrain = list(lstTrain)
-    lstV = list(lstV)
-    lstT = list(lstT)
-        
     
     #Hyper pameters -------------------------------------------    
-    loop = 10  # loop effect，10, 30 all above 0.95
+    loop = 5  # loop effect，10, 30 all above 0.95
     stepNum = 10  # stepNum effect,　10->0.9,  100->0.5
     learnRate = 0.1  # learnRate and lmbda will affect each other
     lmbda = 5.0     #add lmbda(Regularization) to solve overfitting 
-        
-
-    enableDropOut = ri.Ask_YesNo("Excute DropOut?", "n")
-    if enableDropOut:
-        enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
-        nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
-        rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
-    
-    monitoring = ri.Ask_YesNo("Watch the training process?", "y")
-    
-         
-    
-    #Auto caculate proper Hyper pameters  ---
-    loop,stepNum,learnRate,lmbda = rf.Ask_Input_SGD(loop,stepNum,learnRate,lmbda)
-    
-    print( "Hyper Pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
+    dropOutRatio = rn.gDropOutRatio
     
     
     # Load net file and continune training--
-    fns = []
-    for file in os.listdir(".\\"):
-        if file.endswith(".txt"): fns.append(file)
-        
-    aId = ri.Ask_SelectItem("Select network file", fns, 0)    
+    fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".nnf"])
+    aId = ri.Ask_SelectItem("Select network file", fn0s, 0)    
     fn1= fns[aId]
-    while (True):
-      DoKeepTraining = ri.Ask_YesNo("Select Network file {} and continue training?".format(fn1), "y")
-      if DoKeepTraining:
-        if (os.path.isfile(fn1)):
-            net = rn.RvNeuralNetwork.Create_Network(fn1)        
-            if (None!=net):
-                net.Motoring_TrainningProcess = monitoring
-                if enableDropOut:        
-                    net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
-                start = time.time()   
-                # Start Training
-                net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda, False )                
-                dT = time.time()-start         
+#    
+#    print(rfi.ExtractFilePath(fn1))
+#    print(rfi.ExtractFileName(fn1))
+#    print(rfi.ExtractFileExt(fn1))
+#    return
+    
+    if (os.path.isfile(fn1)): 
+        net = rn.RvNeuralNetwork(fn1)     
+        enumDropOut = net.NetEnumDropOut.value,
+        dropOutRatio = net.NetDropOutRatio,
+        #'BestAccuracyRatio' : net.BestAccuracyRatio,
+        loop = net.Train_Loop,
+        learnRate = net.Train_LearnRate,
+        lmbda = net.Train_Lmbda,
+    else: net = None
+      
+    
+    
+    if (None!=net):
+        #Load MNIST ****************************************************************
+        
+        #mnist.pkl.gz(50000） Accuracy 0.96 
+        #mnist_expanded.pkl.gz(250000） Accuracy 0.97 
+        fn = "..\\data\\mnist.pkl.gz"  # "..\\data\\mnist_expanded.pkl.gz"
+        lstTrain, lstV, lstT =  mnist_loader.load_data_wrapper(fn)
+        lstTrain = list(lstTrain)
+        lstV = list(lstV)
+        lstT = list(lstT)
+            
+        
+            
+    
+        enableDropOut = ri.Ask_YesNo("Excute DropOut?", "n")
+        if enableDropOut:
+            enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
+            nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
+            rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", dropOutRatio)
+        
+        monitoring = ri.Ask_YesNo("Watch the training process?", "y")
+        
+        
+        net.Motoring_TrainningProcess = monitoring
+        if enableDropOut:        
+            net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)     
+        
+        
+        #Auto caculate proper Hyper pameters  ---
+        loop,stepNum,learnRate,lmbda = rf.Ask_Input_SGD(loop,stepNum,learnRate,lmbda)
+        
+        print( "Hyper Pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
+        
+        
+        DoKeepTraining = (net!=None) 
+        
+        while (DoKeepTraining):
+            start = time.time()   
+            # Start Training
+            net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda, blInitialWeiBias=False )                
+            dT = time.time()-start         
+            
+            if net.BestAccuracyRatio>net.Get_NetworkFileData(fn1):    
+              rf.Save_NetworkDataFile(net, fn1, loop,stepNum,learnRate,lmbda, dT)
+              print("Save Network file \"{}\"".format(fn1))
                 
-                if net.BestAccuracyRatio>net.Get_NetworkFileData(fn1):    
-                  rf.Save_NetworkDataFile(net, fn1, loop,stepNum,learnRate,lmbda, dT)
-                  print("Save Network file \"{}\"".format(fn1))
-      else:
-        break
-    
-    
+            DoKeepTraining = ri.Ask_YesNo("Continue training?", "y")
+          
 
 
 #%% Main Section ***************************************************************    

@@ -172,11 +172,11 @@ def Predict_One(image, contours, contourId):
     
     #cv2.imshow('image',inputX)
     
-    label, result = net.Predict_Digit(inputX, False)       
+    label, result, outputY = net.Predict_Digit(inputX, False)       
 
     if DrawDigits:        
         rf.Plot_Digit(inputX, result, label)
-        print("Label={}, result:{} ".format(label,result))  
+        print("Label={}, result:{}, actValue({:.5f}) ".format(label,result,outputY))  
     
     cv2.putText(image, str(result) ,(ax,ay+ah), font, 
         fntSize,(0,255,255), fntThickness,cv2.LINE_AA)
@@ -203,7 +203,7 @@ fn1= fns[aId]
 #fn1 = ".\RvNeuralNetwork_NetData_CnvLyr_ShareWeights.nnf"
 
 if (os.path.isfile(fn1)):
-    net = rn.RvNeuralNetwork.Create_Network(fn1)
+    net = rn.RvNeuralNetwork(fn1)
     if (None!=net):          
         camera = cv2.VideoCapture(0)
         while True:

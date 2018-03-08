@@ -133,12 +133,30 @@ class RvNeuralLayer(object):
                 if nArgs in [2,3,4]: #(inputN, neurN, enumAct, enumCoste)
                     self.__Create_4Args(*args)
                 else:
-                    print("Need InputNum and NeuronNum") 
+                    print("Need InputNum and NeuronNum")
+            elif isinstance(args[0], str): # lyrfileName
+                self.__Create_File(*args)              
+            elif isinstance(args[0], object): # lyrObj
+                self.__Create_RefLyrObj(*args)                
             else:
                 print("Need InputNum and NeuronNum")        
         else:
             print("Need InputNum and NeuronNum")    
         
+        
+        
+    def __Create_File(self, filename):
+        if not rfi.FileExists(filename): return #os.path.isfile(filename): return  
+        self.Load_Neurons_Parameters(filename)
+        
+    def __Create_RefLyrObj(self, refLyrObj):
+        #if (refLyrObj.__class__.__name__ == RvNeuralLayer.__name__):
+            inputNum, neuroNum = refLyrObj.Get_InputNum(), refLyrObj.Get_NeuronsNum()
+            #self = RvNeuralLayer(inputNum, neuroNum )
+            self.Update_LayerData(inputNum, neuroNum, 
+                refLyrObj.NeuronsWeights,
+                refLyrObj.NeuronsBiases)
+            self.__Assign_Members(refLyrObj)
         
         
     def __Create_1Args(self, inOutNums,
@@ -165,35 +183,7 @@ class RvNeuralLayer(object):
     """=============================================================
     Static:
     ============================================================="""
-    @staticmethod
-    #### Load network file and create RvNeuralLayer ----------------------------------------------
-    def __Create_Layer_FileName(filename):
-        neuLyr = RvNeuralLayer([])
-        neuLyr.Load_Neurons_Parameters(filename)
-        return neuLyr
     
-    @staticmethod
-    def __Create_Layer_Obj(refLyrObj):
-        if (refLyrObj.__class__.__name__ == RvNeuralLayer.__name__):
-            inputNum, neuroNum = refLyrObj.Get_InputNum(), refLyrObj.Get_NeuronsNum()
-            lyr = RvNeuralLayer(inputNum, neuroNum )
-            lyr.Update_LayerData(inputNum, neuroNum, 
-                refLyrObj.NeuronsWeights,
-                refLyrObj.NeuronsBiases)
-            
-            lyr.__Assign_Members(refLyrObj)
-            return lyr
-        else:
-            return None    
-        
-    @staticmethod
-    def Create_Layer(reference):
-      if isinstance(reference, RvNeuralLayer): 
-          return  RvNeuralLayer.__Create_Layer_Obj(reference)
-      elif isinstance(reference, str):
-          return  RvNeuralLayer.__Create_Layer_FileName(reference)
-      else:
-          return None
     
     """=============================================================
     Private :
@@ -217,6 +207,7 @@ class RvNeuralLayer(object):
         self.__DoDropOut = False
         self.__DropOutRatio = gDropOutRatio
         self.__EnumDropOut = drpOut.eoNone
+        self.ClassActivation,self.ClassCost = None, None
         self.Set_EnumActivation(af.afReLU)
         
     def __Initial_Neurons_Weights_Biases0(self,inputNeuronsNum, oneLyrNeuronsNum):  
@@ -334,7 +325,7 @@ class RvNeuralLayer(object):
         return self.__EnumActivation
         
     def Create_LayerObj(self, refLyrObj):
-         return RvNeuralLayer.Create_Layer(refLyrObj)
+         return RvNeuralLayer(refLyrObj)
          
          
     
@@ -462,7 +453,7 @@ class RvNeuralLayer(object):
     # ----------------------------------------------------------
                 
     def Load_Neurons_Parameters(self, filename):
-        if not os.path.isfile(filename): return
+        if not rfi.FileExists(filename): return #os.path.isfile(filename): return
         pf = open(filename, "r")
         self.__Read_Neurons_Parameters(pf)
         pf.close()
@@ -487,7 +478,21 @@ class RvConvolutionLayer(RvNeuralLayer):
     """=============================================================
     Constructor:
     ============================================================="""
-    def __init__(self, inputShape=[1,1,1], # eg. [pxlW, pxlH, Channel]
+    def __init__(self,  *args):  
+        super().__init__() #加上此，產生所有 parent 的 members 
+        self.__Initial_Members()
+        nArgs = len(args)
+        if nArgs>0:            
+            if isinstance(args[0], list):  # inputShape
+                self.__Create_Normal(*args) 
+            elif isinstance(args[0], str):  
+                self.__Create_File(*args)  
+            elif isinstance(args[0], object): # lyrObj
+                self.__Create_RefLyrObj(*args)        
+            
+        
+        
+    def __Create_Normal(self, inputShape=[1,1,1], # eg. [pxlW, pxlH, Channel]
                  filterShape=[1,1,1,1], # eg. [pxlW, pxlH, Channel, FilterNum], 
                  filterStride=1, # eg 1, 每次移動 1 pxl
                  enumFilterMethod=fm.fmAverageSum,
@@ -507,42 +512,28 @@ class RvConvolutionLayer(RvNeuralLayer):
         
         # access parent private memebers -> self._parentClassName__privateMembers
         self.Set_EnumActivation(enumActivation)  
-           
-    """=============================================================
-    Static:
-    ============================================================="""
-    @staticmethod
-    #### Load network file and create RvConvolutionLayer ----------------------------------------------
-    def __Create_Layer_FileName(filename):
-        neuLyr = RvConvolutionLayer([])
-        neuLyr.Load_Neurons_Parameters(filename)
-        return neuLyr
+            #### Load network file and create RvConvolutionLayer ----------------------------------------------
     
-    @staticmethod
-    def __Create_Layer_Obj(refLyrObj):
-        if (refLyrObj.__class__.__name__  == RvConvolutionLayer.__name__ ):
-            lyr = RvConvolutionLayer([1,1,1],[1,1,1,1],1) 
-            lyr.Update_LayerData(
+    
+    def __Create_File(self, filename):
+        self.Load_Neurons_Parameters(filename)
+    
+    
+    def __Create_RefLyrObj(self, refLyrObj):
+        #if (refLyrObj.__class__.__name__  == RvConvolutionLayer.__name__ ):
+            self.Update_LayerData(
                refLyrObj.InputShape,
                refLyrObj.FilterShape,
                refLyrObj.FilterStride,
                refLyrObj.NeuronsWeights,
                refLyrObj.NeuronsBiases)
-            lyr.__Assign_Members(refLyrObj)
-            return lyr
-        else:
-            return None    
-        
-    @staticmethod
-    def Create_Layer(reference):
-      if isinstance(reference, RvConvolutionLayer): 
-          return  RvConvolutionLayer.__Create_Layer_Obj(reference)
-      elif isinstance(reference, str):
-          return  RvConvolutionLayer.__Create_Layer_FileName(reference)
-      else:
-          return None
-      
-    
+            self.__Assign_Members(refLyrObj)
+            
+            
+            
+    """=============================================================
+    Static:
+    ============================================================="""
     @staticmethod
     def Get_StepsNum_Convolution(inputNum, filterNum, filterStride):
         filterStride = min(filterStride, filterNum)
@@ -632,7 +623,8 @@ class RvConvolutionLayer(RvNeuralLayer):
     ============================================================="""    
     def __Initial_Members(self):  # override     
         # 呼叫 private members --------------------------
-        self._RvNeuralLayer__Initial_Members() 
+#        self._RvNeuralLayer__Initial_Members() 
+#        self.DoUpdateNeuronsWeightsBiases = True
         """ 
         下面改在 parent.__Initial_Members() 內呼叫
         self.__RandomState = np.random.RandomState(int(time.time()))
@@ -640,7 +632,6 @@ class RvConvolutionLayer(RvNeuralLayer):
         self.NeuronsWeights = np.zeros((len(self.NeuronsBiases),0))   
         """
         self.FilterShareWeights = gFilterShareWeights
-        RvNeuralLayer.DoUpdateNeuronsWeightsBiases = True
         # 用來儲存此層所有 Neurons 對應到前一層的那些 Neurons Index
         self.PreNeuronIDsOfWeights = np.zeros((len(self.NeuronsBiases),0))
         
@@ -773,7 +764,7 @@ class RvConvolutionLayer(RvNeuralLayer):
     def __Caculate_dCost_HiddenLayer_ConvolutionLayer(self, preLyrNeusActvs, curLyrNeusZs, 
                 nxtLyrObj, nxtLyrNeusErrs):
         
-        if not RvNeuralLayer.DoUpdateNeuronsWeightsBiases:
+        if not self.DoUpdateNeuronsWeightsBiases:
             #curLyrNeusErrs, curLyrNeus_dCost_dWeis, curLyrNeus_dCost_dBiases
             return np.zeros(curLyrNeusZs.shape), \
                 np.zeros(curLyrNeusZs.shape), np.zeros(curLyrNeusZs.shape)
@@ -889,7 +880,7 @@ class RvConvolutionLayer(RvNeuralLayer):
     
     def Get_NeuronsActivations(self, lyrNeusZs):
         # 呼叫 parent 的 public functions
-        return RvNeuralLayer.ClassActivation.activation(lyrNeusZs)    
+        return self.ClassActivation.activation(lyrNeusZs)    
     
     
     def Get_LayerData(self, lyrIndex=-1):
@@ -937,7 +928,7 @@ class RvConvolutionLayer(RvNeuralLayer):
     
     
     def Create_LayerObj(self, refLyrObj):
-         return RvConvolutionLayer.Create_Layer(refLyrObj)
+         return RvConvolutionLayer(refLyrObj)
     
     # ----------------------------------------------------------
     # Main Functions 
@@ -1004,7 +995,7 @@ class RvConvolutionLayer(RvNeuralLayer):
         self.Set_LayerData(data)
         
     def Load_Neurons_Parameters(self, filename):
-        if not os.path.isfile(filename): return
+        if not rfi.FileExists(filename): return #os.path.isfile(filename): return
         pf = open(filename, "r")
         self.__Read_Neurons_Parameters(pf)
         pf.close()
@@ -1022,7 +1013,23 @@ class RvPollingLayer(RvConvolutionLayer):
     """=============================================================
     Constructor:
     ============================================================="""
-    def __init__(self, inputShape=[1,1,1], # eg. [pxlW, pxlH, Channel]
+    def __init__(self,  *args):  
+        super().__init__() #加上此，產生所有 parent 的 members 
+        self.__Initial_Members()
+        nArgs = len(args)
+        if nArgs>0:            
+            if isinstance(args[0], list):  # inputShape
+                self.__Create_Normal(*args) 
+            elif isinstance(args[0], str):  
+                self.__Create_File(*args)  
+            elif isinstance(args[0], object): # lyrObj
+                self.__Create_RefLyrObj(*args)        
+    
+    
+        super().__init__(*args) #加上此，產生所有 parent 的 members 
+        
+        
+    def __Create_Normal(self, inputShape=[1,1,1], # eg. [pxlW, pxlH, Channel]
                  poolSize=2,  
                  enumPoolingMethod=pm.pmMaxValue,
                  enumActivation=af.afReLU):  
@@ -1038,7 +1045,12 @@ class RvPollingLayer(RvConvolutionLayer):
         # access parent private memebers -> self._parentClassName__privateMembers
         self.Set_EnumActivation(enumActivation)     
 
-
+    def __Create_File(self, filename):
+        if not rfi.FileExists(filename): return #os.path.isfile(filename): return# 看網路參數檔案存在否
+        self._RvConvolutionLayer__Create_File(filename)
+        
+    def __Create_RefLyrObj(self, refLyrObj):
+        self._RvConvolutionLayer__Create_RefLyrObj(refLyrObj)
  
     def __Initial_Members(self):  # override     
         # 呼叫 private members --------------------------
@@ -1097,48 +1109,7 @@ class RvBaseNeuralNetwork(object):
         return [ RvNeuralLayer(inputNeusNum, lyrNeusNum) 
             for inputNeusNum, lyrNeusNum in \
                 zip(layersNeuronsNum[:-1], layersNeuronsNum[1:]) ]
-    
-    @staticmethod
-    def Create_Network(fnNetData):
-        if (not os.path.isfile(fnNetData)): return None # 看網路參數檔案存在否
         
-        f = open(fnNetData, "r")
-        data = json.load(f)
-        f.close()       
-        
-        if len(data)<=0: return None
-            
-        if Debug: 
-            print("\nCreate Network From File : \"{}\"".
-                  format(fnNetData))
-                        
-        """
-        lyrsNeurs = data['LayersNeurons']
-        net = RvNeuralNetwork( lyrsNeurs )  # ( [784,50,10] )
-        for i in range(1, len(lyrsNeurs)):
-            net.NeuralLayers[i-1].Set_LayerData(data['NeuralLayers'][i-1])
-        """
-        lyrObjs = []
-        for lyr in data['NeuralLayers']:
-            if lyr['ClassName']==RvConvolutionLayer.__name__:
-                lyrObjs.append( RvConvolutionLayer([1,1,1],[1,1,1,1],1) )
-            else:
-                lyrObjs.append( RvNeuralLayer(1,1) )
-                
-        i=0
-        for lyrObj in lyrObjs:
-            lyrObj.Set_LayerData(data['NeuralLayers'][i])
-            i+=1
-            
-        net = RvNeuralNetwork(lyrObjs)
-            
-        # 2018/02/12 新增
-        key1, key2 = "EnumDropOutValue", "DropOutRatio"
-        if (key1 in data) and (key2 in data):
-            enumDropOut = nm.EnumDropOutMethod( data[key1] )            
-            net.Set_DropOutMethod(enumDropOut, data[key2])
-            
-        return net
     
     
     """=============================================================
@@ -1161,6 +1132,10 @@ class RvBaseNeuralNetwork(object):
                     self.__Create_LayerObjects(*args)
                 elif isinstance(args[0][0], int): 
                     self.__Create_LayerNeurons(*args)
+            elif isinstance(args[0], str): # lyrfileName
+                self.__Create_File(*args)              
+            elif isinstance(args[0], object): # netObj
+                self.__Create_RefNetObj(*args)            
             else:
                 print("Need InputNum and NeuronNum")        
         else:
@@ -1177,14 +1152,74 @@ class RvBaseNeuralNetwork(object):
     def __Create_LayerObjects(self, lstLayersObjs):
         self.NeuralLayers = lstLayersObjs
         # 最後一層強制為 sigmoid
-#        self.NeuralLayers[-1].ClassActivation, self.NeuralLayers[-1].ClassCost = \
-#            nm.Activation_Sigmoid, nm.Cost_Quadratic
-            #nm.Get_ClassActivation( nm.EnumActivation.afSigmoid)
+        self.NeuralLayers[-1].Set_EnumActivation(nm.EnumActivation.afSigmoid)
         
     def __Create_LayerNeurons(self, lstLayersNeurons):
         self.__Create_LayerObjects( \
-            RvNeuralNetwork.LayersNeurons_To_RvNeuralLayers(lstLayersNeurons))            
+            RvNeuralNetwork.LayersNeurons_To_RvNeuralLayers(lstLayersNeurons)) 
+
+
+
+    def __Create_RefNetObj(self, refNetObj):
+        self.NeuralLayers = refNetObj.NeuralLayers
+        self.__Assign_Members(refNetObj)
+        
+        
+
+    def __Create_File(self, filename):
+        if not rfi.FileExists(filename): return #os.path.isfile(filename) return None # 看網路參數檔案存在否
+        
+        f = open(filename, "r")
+        data = json.load(f)
+        f.close()       
+        
+        if len(data)<=0: return None
+            
+        if Debug: 
+            print("\nCreate Network From File : \"{}\"".format(filename))
+            
+        lyrObjs = []
+        for lyr in data['NeuralLayers']:
+            if lyr['ClassName']==RvConvolutionLayer.__name__:
+                lyrObjs.append( RvConvolutionLayer([1,1,1],[1,1,1,1],1) )
+            else:
+                lyrObjs.append( RvNeuralLayer(1,1) )
+                
+        i=0
+        for lyrObj in lyrObjs:
+            lyrObj.Set_LayerData(data['NeuralLayers'][i])
+            i+=1
+            
+        self.NeuralLayers = lyrObjs
+            
+        # 2018/02/12 新增
+        key1, key2 = "EnumDropOutValue", "DropOutRatio"
+        if (key1 in data) and (key2 in data):
+            enumDropOut = nm.EnumDropOutMethod( data[key1] )            
+            self.Set_DropOutMethod(enumDropOut, data[key2])       
+        if ('BestAccuracyRatio' in data): self.BestAccuracyRatio = data['BestAccuracyRatio']
+        if ('Train_LearnRate' in data): self.Train_LearnRate = data['Train_LearnRate']
+        if ('Train_Lmbda' in data): self.Train_Lmbda = data['Train_Lmbda']
+            
+            
+    
+    def __Assign_Members(self, refNetObj):   
+        #self.NeuralLayers = []
+        self.__RandomState = np.random.RandomState(int(time.time()))
+        self.NetEnableDropOut = refNetObj.NetEnableDropOut
+        self.NetEnumDropOut = refNetObj.NetEnumDropOut
+        self.NetDropOutRatio = refNetObj.NetDropOutRatio
+        self.Motoring_TrainningProcess = refNetObj.Motoring_TrainningProcess        
+        self.WorstAccuracyRatio = refNetObj.WorstAccuracyRatio
+        self.BestAccuracyRatio = refNetObj.BestAccuracyRatio
+        self.AverageAccuracyRatio = refNetObj.AverageAccuracyRatio      
+        self.AverageCost = refNetObj.AverageCost
+        self.Train_Loop = refNetObj.Train_Loop
+        self.Train_LearnRate = refNetObj.Train_LearnRate
+        self.Train_Lmbda = refNetObj.Train_Lmbda
+        self.Train_TimeSec = refNetObj.Train_TimeSec      
           
+        
     def __Initial_Members(self):   
         self.NeuralLayers = []
         self.__RandomState = np.random.RandomState(int(time.time()))
@@ -1208,12 +1243,12 @@ class RvBaseNeuralNetwork(object):
         self.Accuracy = self.__Accuracy_Normal
         
         path = "..\\TmpLogs\\{}\\".format(self.__class__.__name__)
-        if not os.path.isdir(path): os.mkdir(path)
+        rfi.ForceDir(path) #if not os.path.isdir(path): os.mkdir(path)
         self.LogPath = path        
         self.__FnNetworkData = "{}{}_NetData".format(path, RvNeuralNetwork.__name__)   
         
         self.VideoImagePath = "{}{}\\".format(path,"VideoImgs")
-        if not os.path.isdir(self.VideoImagePath): os.mkdir(self.VideoImagePath)
+        rfi.ForceDir(self.VideoImagePath) #if not os.path.isdir(self.VideoImagePath): os.mkdir(self.VideoImagePath)
         self.__VidoeImageFn = "{}{}".format(self.VideoImagePath, "vdoImg")
         self.CurLoop = 0
     
@@ -1389,12 +1424,23 @@ class RvBaseNeuralNetwork(object):
         cost = 0.0
         #drawDigits = [False]*10 # -> [False, False, False... False]
         if plotOutput: 
-            digitFigs = {title : [] for title in range(10)}
-            nCol = int(np.sqrt(len(digitFigs)))
-            nRow = int(len(digitFigs)/nCol)+1
+            #digitFigs = {title : [] for title in range(10)}
+            digitFigs = [ [] for title in range(10)]
+            outputFigs = [ [] for title in range(10)] #np.copy(digitFigs)
+            nCol = 5 #int(np.sqrt(len(digitFigs)))
+            nRow = 2 #int(len(digitFigs)/nCol)+1
             pxls = len(inputDatas[0][0])
             pxlW = int(np.sqrt(pxls))
             pxls = pxlW*pxlW
+            dpi = 72
+            zoom = 6   # 28 pxl * zoom
+            
+            pltInchW =  pxlW/dpi*nCol * zoom
+            Ypxls = self.NeuralLayers[-1].Get_NeuronsNum() #10 if createLabelY else len(inputDatas[0][1])
+            YpxlW = int(np.sqrt(Ypxls)) #+ (1 * (Ypxls%YpxlW>0) )
+            Ypxls = YpxlW*YpxlW
+            Yzoom = 50   # 4 pxl * zoom
+            YpltInchW =  YpxlW/dpi*nCol * Yzoom
             
         n_Data = len(inputDatas)
         for x, y in inputDatas:
@@ -1406,13 +1452,17 @@ class RvBaseNeuralNetwork(object):
             
             if plotOutput: 
                 if digitFigs[digitId]==[]:
+#                    digitFigs[digitId]=\
+#                      np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255
                     digitFigs[digitId]=\
-                      np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255
-#                print("Plot Output \"{}\": ".format(digitId))
-#                rf.Plot_Digit( [finalLyrNeuronsActvns.transpose(),0], digitId, digitId)
-        
+                      np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255      
+                    outputFigs[digitId]=\
+                      np.array(finalLyrNeuronsActvns[:Ypxls].transpose()).reshape(YpxlW,YpxlW)*255
+                      
         if plotOutput: 
-            pltFn.Plot_Figures(digitFigs, nRow, nCol)    
+            #pltFn.Plot_Figures(digitFigs, nRow, nCol)    
+            pltFn.Plot_Images(np.array(digitFigs),nRow,nCol, "Input","", pltInchW)
+            pltFn.Plot_Images(np.array(outputFigs),nRow,nCol, "Output", "", YpltInchW)
             
         # Regularization = lmbda/2n * Sum(wei^2)
         cost += 0.5*(lmbda/n_Data)*sum(
@@ -1426,11 +1476,14 @@ class RvBaseNeuralNetwork(object):
         if plotOutput: 
             digitFigs = [ [] for title in range(10)]
             outputFigs = [ [] for title in range(10)] #np.copy(digitFigs)
-            nCol = 10 #int(np.sqrt(len(digitFigs)))
-            nRow = 1 #int(len(digitFigs)/nCol)+1
+            nCol = 5 #int(np.sqrt(len(digitFigs)))
+            nRow = 2 #int(len(digitFigs)/nCol)+1
             pxls = len(inputDatas[0][0])
             pxlW = int(np.sqrt(pxls))
             pxls = pxlW*pxlW
+            dpi = 72
+            zoom = 6   # 28 pxl * zoom
+            pltInchW =  pxlW/dpi*nCol * zoom
             
         cost = 0.0
         n_Data = len(inputDatas)        
@@ -1449,8 +1502,8 @@ class RvBaseNeuralNetwork(object):
                       np.array(finalLyrNeuronsActvns[:pxls].transpose()).reshape(pxlW,pxlW)*255
                       
         if plotOutput:            
-            pltFn.Plot_Images(np.array(digitFigs),nRow,nCol, "Input")
-            pltFn.Plot_Images(np.array(outputFigs),nRow,nCol, "Output", fn)
+            pltFn.Plot_Images(np.array(digitFigs),nRow,nCol, "Input","", pltInchW)
+            pltFn.Plot_Images(np.array(outputFigs),nRow,nCol, "Output", fn, pltInchW)
             
         # Regularization = lmbda/2n * Sum(wei^2)
         cost += 0.5*(lmbda/n_Data)*sum(
@@ -1563,6 +1616,7 @@ class RvBaseNeuralNetwork(object):
         print("\n************************************************")
         print("{}() with Stochastic Gradient Desent ********".format(sFunc))
         if trainOnlyDigit in (0,10): print("Train Only Digit = {}".format(trainOnlyDigit))
+        print("Best Accuracy = {}".format(self.BestAccuracyRatio))
         print("DropOut={}, DropRatio={}, DropOutMethod={}".
               format(self.NetEnableDropOut, self.NetDropOutRatio, self.NetEnumDropOut.name))
         print("Random DropOut doesn't help in MNIST training")
@@ -1652,7 +1706,7 @@ class RvBaseNeuralNetwork(object):
     
     def Get_NetworkFileData(self, fnNetData):  
         accur = 0.0
-        if (not os.path.isfile(fnNetData)):  # 看網路參數檔案存在否
+        if not rfi.FileExists(fnNetData): #os.path.isfile(fnNetData):  # 看網路參數檔案存在否
             return accur
         
         f = open(fnNetData, "r")
@@ -1719,7 +1773,7 @@ class RvBaseNeuralNetwork(object):
             filename="{}_NetData.nnf".format(self.__class__.__name__)  
         
         path = os.path.dirname(os.path.abspath(filename)) 
-        if not os.path.isdir(path): os.mkdir(path)
+        rfi.ForceDir(path) #if not os.path.isdir(path): os.mkdir(path)
         
         pf = open(filename, "w")
         self.__Write_NetworkData(pf)
@@ -1773,8 +1827,7 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
     Constructor :
     ============================================================="""       
     def __init__(self,  *args):
-        # call parent constructor to set name and color  
-        super().__init__(*args)       
+        super().__init__(*args) #加上此，產生所有 parent 的 members 
         #self.__newMember = xxxxx
         if Debug: print(self.__class__.__name__)
     
@@ -1788,9 +1841,9 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
     #--------------------------------------------------------------------- 
     def __Train(self, training_data, loop, samplingStep, learnRate,
             test_data=None, lmbda=0.0, blInitialWeiBias=True, trainOnlyDigit=-1): 
-        
+        if blInitialWeiBias:
+            self.BestAccuracyRatio = 0.0
         self.WorstAccuracyRatio = 1.0
-        self.BestAccuracyRatio = 0.0
         self.AverageAccuracyRatio = 0.0
         self.AverageCost = 0.0
         self.Train_Loop = 0
@@ -1823,7 +1876,7 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
         
         #測試資料 test_data[10000] = [ x[784], y[1] ], [ x[784], y[1] ],..... 10000筆   
         worstAccuracyRatio = 1.0
-        bestAccuracyRatio = 0.0        
+        bestAccuracyRatio = self.BestAccuracyRatio        
         
         if (self.Get_LayersNum()<1):        
             return worstAccuracyRatio,bestAccuracyRatio 
@@ -1913,21 +1966,22 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
                 accuracy = self.Accuracy(test_data)
                 test_accuracy.append(accuracy)            
                 incCost += cost
-                accuRatio = accuracy #/n_test
+                accuRatio = accuracy/n_test
                 incAccuRatio += accuRatio
             
-                if accuRatio > bestAccuracyRatio: 
-                    bestAccuracyRatio = accuRatio
-                    s1 = "<-- Best"
-                    fnNw = "{}_Best.nnf".format(fnNetworkData1)
-                    fileAccu = self.Get_NetworkFileData(fnNw)
-                    if (accuRatio>fileAccu):         
-                      self.Train_TimeSec = time.time()-t0
-                      self.BestAccuracyRatio = accuRatio
-                      self.Train_Loop = j+1
-                      self.Save_NetworkData(fnNw)   
-                else:
-                    s1 = ""
+                if Debug:
+                    if accuRatio > bestAccuracyRatio: 
+                        bestAccuracyRatio = accuRatio
+                        s1 = "<-- Best"
+                        fnNw = "{}_Best.nnf".format(fnNetworkData1)
+                        fileAccu = self.Get_NetworkFileData(fnNw)
+                        if (bestAccuracyRatio>fileAccu):         
+                          self.Train_TimeSec = time.time()-t0
+                          self.BestAccuracyRatio = bestAccuracyRatio
+                          self.Train_Loop = j+1
+                          self.Save_NetworkData(fnNw)   
+                    else:
+                        s1 = ""
                 
                 if accuRatio < worstAccuracyRatio:
                     worstAccuracyRatio = accuRatio
@@ -2063,7 +2117,7 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
             
         if plotDigit: rf.Plot_Digit(oneImgDigit)
         
-        return label, result, value
+        return label, result, value[0]
     
     
     
@@ -2078,7 +2132,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
     ============================================================="""  
     @staticmethod
     def Load_DigitImages(digitImgPath, imgPxls):
-        if not os.path.isdir(digitImgPath): return
+        if not rfi.PathExists(digitImgPath): return # os.path.isdir(digitImgPath): return
         if imgPxls<=0:return
         imgW = int(np.sqrt(imgPxls))
         
@@ -2108,8 +2162,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
     Constructor :
     ============================================================="""       
     def __init__(self,  *args):
-        # call parent constructor to set name and color  
-        super().__init__(*args)       
+        super().__init__(*args) #加上此，產生所有 parent 的 members 
         #self.__newMember = xxxxx
         if Debug: print(self.__class__.__name__)
     
@@ -2124,8 +2177,10 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
         """
         decoderLabels is same shape as training_data[][0].shape (1x784)
         """
+        if blInitialWeiBias:
+            self.BestAccuracyRatio = 0.0
+            
         self.WorstAccuracyRatio = 1.0
-        self.BestAccuracyRatio = 0.0
         self.AverageAccuracyRatio = 0.0
         self.AverageCost = 0.0
         self.Train_Loop = 0
@@ -2159,7 +2214,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
         
         #測試資料 test_data[10000] = [ x[784], y[1] ], [ x[784], y[1] ],..... 10000筆   
         worstAccuracyRatio = 10000.0
-        bestAccuracyRatio = -10000.0     
+        bestAccuracyRatio = self.BestAccuracyRatio     
         
         if (self.Get_LayersNum()<1):        
             return worstAccuracyRatio,bestAccuracyRatio 
@@ -2194,7 +2249,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
                 
         imgPath = "{}{}\\".format(self.VideoImagePath,"endecoder" )        
         self._RvBaseNeuralNetwork__VidoeImageFn = "{}Update".format(imgPath)
-        if not os.path.isdir(imgPath): os.mkdir(imgPath)
+        rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
         rfi.Delete_Files(imgPath, [".jpg",".png"])
         
         t00 = time.time() 
@@ -2247,19 +2302,20 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
             accuRatio = train_accuracy/n_train
             incAccuRatio += accuRatio
         
-            if accuRatio > bestAccuracyRatio: 
-                bestAccuracyRatio = accuRatio
-                s1 = "<-- Best"
-                fnSave = "{}Best.{}".format(imgPath, self.CurLoop, "endecoder") 
-                fileAccu = self.Get_NetworkFileData(fnSave)
-                if (accuRatio>fileAccu):         
-                  self.Train_TimeSec = time.time()-t0
-                  self.BestAccuracyRatio = accuRatio
-                  self.Train_Loop = j+1                
-                  self.Save_NetworkData(fnSave)                     
-                  print("Model saved as \"{}\"".format(fnSave))
-            else:
-                s1 = ""            
+            if Debug:
+                if accuRatio > bestAccuracyRatio: 
+                    bestAccuracyRatio = accuRatio
+                    s1 = "<-- Best"
+                    fnSave = "{}ModelBest_{}.{}".format(imgPath, self.CurLoop, "endecoder") 
+                    fileAccu = self.Get_NetworkFileData(fnSave)
+                    if (bestAccuracyRatio>fileAccu):         
+                      self.Train_TimeSec = time.time()-t0
+                      self.BestAccuracyRatio = bestAccuracyRatio
+                      self.Train_Loop = j+1                
+                      self.Save_NetworkData(fnSave)                     
+                      print("Model saved as \"{}\"".format(fnSave))
+                else:
+                    s1 = ""            
             
             if accuRatio < worstAccuracyRatio:
                 worstAccuracyRatio = accuRatio

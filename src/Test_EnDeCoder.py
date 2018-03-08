@@ -111,32 +111,28 @@ aId = 0 #ri.Ask_SelectItem("Select Encoder file", shortFns, 0)
 fn2= fns[aId]
 
 #addNoise = ri.Ask_YesNo("Add noise?", "n")
-noiseStrength = ri.Ask_Input_Float("Input Noise Strength.", 0.0)
+noiseStrength = 0.8 #ri.Ask_Input_Float("Input Noise Strength.", 0.0)
 
 randomState = np.random.RandomState(int(time.time()))
 
-if (os.path.isfile(fn1)):         
-#    inputX = randomState.randn(784,1)
-#    net = rn.RvNeuralNetwork.Create_Network(fn1)    
-#    label, result = net.Predict_Digit([inputX,1], False)   
+if (os.path.isfile(fn1)):            
     
+    decoder = rn.RvNeuralEnDeCoder(fn1)
+    encoder = rn.RvNeuralEnDeCoder(fn2)
     
-    decoder = rn.RvNeuralEnDeCoder.Create_Network(fn1)
-    encoder = rn.RvNeuralEnDeCoder.Create_Network(fn2)
-    
-    imgPath = "{}\\{}".format(decoder.VideoImagePath, "EncoderDecoder")   
-    if not os.path.isdir(imgPath): os.mkdir(imgPath)
+    imgPath = "{}\\{}\\".format(decoder.VideoImagePath, "EncoderDecoder")   
+    rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
     rfi.Delete_Files(imgPath, [".jpg",".png"])
         
-    sampleNum=50 # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
+    sampleNum=20 
     if (None!=decoder) and (None!=encoder):            
       
-        rf.Test_Encoder_Decoder(encoder, decoder, lstT, 5, imgPath, noiseStrength)
+        rf.Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum, imgPath, noiseStrength)
 
         aviFn = "{}{}".format(imgPath, "EncoderDecoder.avi")
         
         if ru.ImageFilesToAvi(imgPath, aviFn ):
-            os.system(r'start ' + aviFn)
+            rfi.OpenFile(aviFn)
 
 
 

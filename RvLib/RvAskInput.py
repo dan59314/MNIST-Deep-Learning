@@ -99,7 +99,7 @@ def Ask_SelectItem(sAsk, sItems, default):
     sInput = input("Input Index (Now={}, \"{}\"): ".format( default, sItems[default] ) )
     try: 
         if ""!=sInput: 
-            return int(sInput)
+            return  max(0, min(int(sInput), len(sItems)-1)) 
         else:
             return default
     except ValueError:

@@ -49,6 +49,7 @@ import matplotlib.pyplot as plt
 import RvAskInput as ri
 import RvNeuralNetworks as rn
 import PlotFunctions as pltFn
+import RvFileIO as rfi
 
 
 
@@ -387,15 +388,15 @@ def Predict_Digits(net, lstT, plotDigit=True, onlyDigit=-1):
       if (lstT[i][1]==onlyDigit) or (onlyDigit<0):
         doPlot = (i%plotMod == 0)
         aId = np.random.randint(0,len(lstT))
-        label, result, ratio = net.Predict_Digit(lstT[aId], False)    
+        label, result, outputY = net.Predict_Digit(lstT[aId], False)    
         if label==result: correctNum+=1
         else: 
             doPlot = (failNum<plotNum) 
             failNum+=1
         if doPlot and plotDigit:
             Plot_Digit(lstT[aId], result, label)
-            print("({}): Label={}, Predict:{}({}) -> {} ".
-              format(i, label,result,ratio, sResult[int(label==result)]))   
+            print("({}): Label={}, Predict:{}({:.5f} ) -> {} ".
+                 format(i, label,result, outputY, sResult[int(label==result)]))   
     
     dt = time.time()-start
     
@@ -408,7 +409,7 @@ def Predict_Digits(net, lstT, plotDigit=True, onlyDigit=-1):
     
 def Predict_Digits_FromNetworkFile(fn, lstT, plotDigit=True, onlyDigit=-1):
     if (os.path.isfile(fn)):
-        net = rn.RvNeuralNetwork.Create_Network(fn)
+        net = rn.RvNeuralNetwork(fn)
         if (None==net): return 0.0, 0.0    
         return Predict_Digits(net, lstT, plotDigit, onlyDigit)    
 
@@ -441,8 +442,8 @@ def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
         print("Input({}) -> Output : Accuracy={:.3f}".
               format(digitId, decoder.Get_Accuracy_EnDeCoder(oneInput, output)))  
         
-        if os.path.isdir(saveImgPath):
-            imgFn = "{}_{}.png".format(saveImgPath, i)
+        if rfi.PathExists(saveImgPath):
+            imgFn = "{}vdoImg_{}.png".format(saveImgPath, i)
         else:
             imgFn = ""
             

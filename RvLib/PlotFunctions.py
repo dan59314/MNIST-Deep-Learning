@@ -99,7 +99,7 @@ plot_figures(figures, 2, 4)
 """
 
 
-def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10):
+def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10 ):
     """Plot a dictionary of figures.
 
     Parameters
@@ -136,9 +136,11 @@ def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10):
         clear=False, **kwargs)
     """
     
+    figH_Inch = figW_Inch * nrows/ncols
+    
     idx = 0
-    fig=plt.figure(figsize=(figW_Inch,figW_Inch))
-#    if ""!=sTitle: fig.suptitle(sTitle)
+    fig=plt.figure(figsize=(figW_Inch,figH_Inch))
+    #if ""!=sTitle: fig.suptitle(sTitle)
     for i in range(1, ncols*nrows +1):
         fig.add_subplot(nrows,ncols, i)
         plt.axis('off')
@@ -146,11 +148,12 @@ def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10):
           plt.imshow([[]])
         else:
           plt.imshow(images[idx], cmap=plt.gray())
+        if (""!=sTitle) and (i==1): plt.title(sTitle)
         idx+=1
         
     #img.set_cmap('hot')
     if ""!=saveFn: plt.savefig(saveFn, bbox_inches='tight') #要放在 plt.show()之前才能正確存出圖形  
-   
+    
     plt.show()
     
 
