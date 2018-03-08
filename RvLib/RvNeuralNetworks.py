@@ -64,6 +64,7 @@ from enum import Enum
 import time
 #from datetime import datetime
 from datetime import datetime, timedelta
+import random
 
 
 # Third-party libraries------------------------------------------
@@ -1085,7 +1086,9 @@ class RvBaseNeuralNetwork(object):
         shape = oneInput.shape
         for i in range(shape[0]):
             for j in range(shape[1]):
-                oneInput[i][j] = min(1.0, oneInput[i][j]+np.random.random()*strength)                
+                if ( random.randint(0,10) == 0 ):
+                  oneInput[i][j] = min(1.0, oneInput[i][j]+np.random.random()*strength)  
+                #oneInput[i][j] = min(1.0, oneInput[i][j]+np.random.random()*strength)                
         return oneInput
                 
             
@@ -1254,7 +1257,7 @@ class RvBaseNeuralNetwork(object):
         # 指定前一筆輸入值          
         if len(lyrsNeusActvs)>1: priLyrNeusActvns = lyrsNeusActvs[-2]
         else: priLyrNeusActvns = oneInputX         
-        
+         
         # Step2 : 先計算最後一層輸出層的 cost 對 weight, bias 的偏微分，然後往前一直更新  
         nxtLyrNeusErrs, lyrsNeus_dCost_dWeis[-1], lyrsNeus_dCost_dBiases[-1] = \
             self.NeuralLayers[-1].Caculate_dCost_OutputLayer( \
@@ -1423,8 +1426,8 @@ class RvBaseNeuralNetwork(object):
         if plotOutput: 
             digitFigs = [ [] for title in range(10)]
             outputFigs = [ [] for title in range(10)] #np.copy(digitFigs)
-            nCol = int(np.sqrt(len(digitFigs)))
-            nRow = int(len(digitFigs)/nCol)+1
+            nCol = 10 #int(np.sqrt(len(digitFigs)))
+            nRow = 1 #int(len(digitFigs)/nCol)+1
             pxls = len(inputDatas[0][0])
             pxlW = int(np.sqrt(pxls))
             pxls = pxlW*pxlW
@@ -2230,11 +2233,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
             #if 測試集開始之前，要先關掉 DropOut,測試集不能使用 DropOut
             for lyr in self.NeuralLayers:
                 lyr.Set_DropOut(False)
-                
-            if Debug:
-                fnSave = "{}Update_{}.{}".format(imgPath, self.CurLoop, "endecoder") 
-                self.Save_NetworkData(fnSave)                     
-                
+                                
                 
             # 根據更新後的 Weights, Biases 重新計算 training_data的 cost, accuracy
             train_cost = self.Total_Cost(training_data, lmbda, 
@@ -2251,13 +2250,14 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
             if accuRatio > bestAccuracyRatio: 
                 bestAccuracyRatio = accuRatio
                 s1 = "<-- Best"
-#                fnNw = "{}_TrainBest.nnf".format(fnNetworkData1)
-#                fileAccu = self.Get_NetworkFileData(fnNw)
-#                if (accuRatio>fileAccu):         
-#                  self.Train_TimeSec = time.time()-t0
-#                  self.BestAccuracyRatio = accuRatio
-#                  self.Train_Loop = j+1
-#                  self.Save_NetworkData(fnNw)   
+                fnSave = "{}Best.{}".format(imgPath, self.CurLoop, "endecoder") 
+                fileAccu = self.Get_NetworkFileData(fnSave)
+                if (accuRatio>fileAccu):         
+                  self.Train_TimeSec = time.time()-t0
+                  self.BestAccuracyRatio = accuRatio
+                  self.Train_Loop = j+1                
+                  self.Save_NetworkData(fnSave)                     
+                  print("Model saved as \"{}\"".format(fnSave))
             else:
                 s1 = ""            
             
