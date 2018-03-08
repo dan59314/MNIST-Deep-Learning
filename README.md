@@ -95,6 +95,11 @@ Deep Learning codes for MNIST with detailed explanation
 
 [![AutoEncoder Digits](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/Update_3.png)](https://youtu.be/hXn95IGmmpI?t=0s "MNIST Encoder / Decoder") 
 	
+	
+[AutoEncoder Denoise Video](https://youtu.be/C2Dz2TXs0Rc)
+
+[![AutoEncoder Denoise](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/vdoImg_11.png)](https://youtu.be/C2Dz2TXs0Rc?t=0s "MNIST Encoder / Decoder") 
+
 ------------------------------------------------------------------------------------
 ## What else you can do?
 
