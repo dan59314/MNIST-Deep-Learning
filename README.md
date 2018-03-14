@@ -100,6 +100,10 @@ Deep Learning codes for MNIST with detailed explanation
 
 [![AutoEncoder Denoise](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/vdoImg_11.png)](https://youtu.be/C2Dz2TXs0Rc?t=0s "MNIST Encoder / Decoder") 
 
+[AutoEncoder Sharpen Video](https://goo.gl/ykXHqz)
+
+[![AutoEncoder Sharpen](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/vdoImg_3_0.png)](https://goo.gl/ykXHqz?t=0s "MNIST Sharpen Model") 
+
 ------------------------------------------------------------------------------------
 ## What else you can do?
 
@@ -153,6 +157,17 @@ Deep Learning codes for MNIST with detailed explanation
       
       output = decoder.Get_OutputValues(code)  # Decode code to digit  
       
+      
+ ### Build Sharpen Model:
+      ### Train_SharpenModel.py  # Build Sharpen Model
+        
+        .... encoder, decoder = endecoder.Build_Encoder_Decoder_AssignOutputY( \
+            lstNew, loop, stepNum, learnRate, lmbda, initialWeights, digitIdOnly)
+      
+      ### Test_SharpenModel.py  # Test Denoise and sharpen 
+ 
+        .....  rf.Test_EnDecoder(sharpenModel, lstTest, sampleNum, imgPath, noiseStrength)
+ 
 ------------------------------------------------------------------------------------      
 ## Test result
 
