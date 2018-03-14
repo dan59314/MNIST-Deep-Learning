@@ -74,10 +74,6 @@ AddNoise = False
 
 
 
-
-
-
-
 #%%% Test Section
 
 
@@ -124,14 +120,16 @@ if (os.path.isfile(fn1)):
     rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
     rfi.Delete_Files(imgPath, [".jpg",".png"])
         
-    sampleNum=20 
+    sampleNum=20
+    durationSec = min(0.2, 10/sampleNum)
+    
     if (None!=decoder) and (None!=encoder):            
       
         rf.Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum, imgPath, noiseStrength)
 
         aviFn = "{}{}".format(imgPath, "EncoderDecoder.avi")
         
-        if ru.ImageFilesToAvi(imgPath, aviFn ):
+        if ru.ImageFilesToAvi(imgPath, aviFn, durationSec ):
             rfi.OpenFile(aviFn)
 
 

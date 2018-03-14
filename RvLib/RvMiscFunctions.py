@@ -55,8 +55,6 @@ import RvFileIO as rfi
 
 
 #%%
-
-
 def Ask_Input_SGD(loop,stepNum,learnRate,lmbda):  
     print("Now : loop({}), stepNum({}), learnRate({}), lmbda({})".
         format(loop,stepNum,learnRate,lmbda) )    
@@ -414,13 +412,14 @@ def Predict_Digits_FromNetworkFile(fn, lstT, plotDigit=True, onlyDigit=-1):
         return Predict_Digits(net, lstT, plotDigit, onlyDigit)    
 
 
+        
 
 
 def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
         noiseStrength=0.0):
     # 隨機測試某筆數字 ----------------------------------------------    
     #start = time.time() 
-    
+        
     pxlW = int(np.sqrt(len(lstT[0][0])))
     
     # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
@@ -434,28 +433,77 @@ def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
         if (noiseStrength>0.0):
             oneInput = rn.RvBaseNeuralNetwork.Add_Noise(oneInput, noiseStrength)
             
-        encode = encoder.Get_OutputValues(oneInput) #(784x1)          
+        
+        for j in range(1):  # 多做幾次，效果不會比較好
+            encode = encoder.Get_OutputValues(oneInput) #(784x1)          
                           
-        #output = decoder.Plot_Output(encode) #(784x1)    
-        output = decoder.Get_OutputValues(encode)    
+            #output = decoder.Plot_Output(encode) #(784x1)    
+            output = decoder.Get_OutputValues(encode)    
+            
+            print("Input({}) -> Output : Accuracy={:.3f}".
+                  format(digitId, decoder.Get_Accuracy_EnDeCoder(oneInput, output)))              
+            if rfi.PathExists(saveImgPath):
+                imgFn = "{}vdoImg_{}_{}.png".format(saveImgPath, i,j)
+            else:
+                imgFn = ""               
+            
+            pltFn.Plot_Images(np.array([oneInput.transpose().reshape(pxlW,pxlW)*255,
+                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", imgFn)
+            oneInput = output
+            
+            
+#        print("Input({}) -> Output : Accuracy={:.3f}".
+#                  format(digitId, decoder.Get_Accuracy_EnDeCoder(lstT[aId][0], output)))   
+#        pltFn.Plot_Images(np.array([lstT[aId][0].transpose().reshape(pxlW,pxlW)*255,
+#                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", "")
+    
         
-        print("Input({}) -> Output : Accuracy={:.3f}".
-              format(digitId, decoder.Get_Accuracy_EnDeCoder(oneInput, output)))  
+    #dt = time.time()-start                     
+    
+    
+    
+
+def Test_EnDecoder(endecoder, lstT, sampleNum=10, saveImgPath="",
+        noiseStrength=0.0):
+    # 隨機測試某筆數字 ----------------------------------------------    
+    #start = time.time() 
         
-        if rfi.PathExists(saveImgPath):
-            imgFn = "{}vdoImg_{}.png".format(saveImgPath, i)
-        else:
-            imgFn = ""
+    pxlW = int(np.sqrt(len(lstT[0][0])))
+    
+    # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
+    for i in range(0, sampleNum):
+        aId = np.random.randint(0,len(lstT))
+        digitId = lstT[aId][1]
+        
+        oneInput =lstT[aId][0]
+        #rf.Plot_Digit([oneInput.transpose(), lstT[aId][1] ] )  #(1x784)        
+        
+        if (noiseStrength>0.0):
+            oneInput = rn.RvBaseNeuralNetwork.Add_Noise(oneInput, noiseStrength)
             
         
-        pltFn.Plot_Images(np.array([oneInput.transpose().reshape(pxlW,pxlW)*255,
-                output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", imgFn)
+        for j in range(1):  # 多做幾次，效果不會比較好
+            output = endecoder.Get_OutputValues(oneInput)    
+            
+            print("Input({}) -> Output : Accuracy={:.3f}".
+                  format(digitId, endecoder.Get_Accuracy_EnDeCoder(oneInput, output)))              
+            if rfi.PathExists(saveImgPath):
+                imgFn = "{}vdoImg_{}_{}.png".format(saveImgPath, i,j)
+            else:
+                imgFn = ""               
+            
+            pltFn.Plot_Images(np.array([oneInput.transpose().reshape(pxlW,pxlW)*255,
+                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", imgFn)
+            oneInput = output
+            
+            
+#        print("Input({}) -> Output : Accuracy={:.3f}".
+#                  format(digitId, decoder.Get_Accuracy_EnDeCoder(lstT[aId][0], output)))   
+#        pltFn.Plot_Images(np.array([lstT[aId][0].transpose().reshape(pxlW,pxlW)*255,
+#                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", "")
     
-#        pltFn.Plot_Images(np.array([oneInput.transpose()*255,
-#                output.transpose()*255]),1,2)
         
-    #dt = time.time()-start                
-                
+    #dt = time.time()-start          
                 
 #%% Initial Functions
 

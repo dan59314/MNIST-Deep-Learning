@@ -106,7 +106,7 @@ def Main():
     lmbda = 5.0     #add lmbda(Regularization) to solve overfitting 
     
     
-    net = None
+    endecoder = None
     
     # Training ***********************************************************
     # Ask DoTraining-
@@ -117,7 +117,7 @@ def Main():
         fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".endecoder"])
         aId = ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
         fn1= fns[aId]
-        net = rn.RvNeuralEnDeCoder(fn1)       
+        endecoder = rn.RvNeuralEnDeCoder(fn1)       
         
         initialWeights = False
         
@@ -134,10 +134,12 @@ def Main():
         # [784,256,128,10] is suggested ----------------------------
         # [784, 256, 128, 10, 128, 256, 784 ] -> 0.9395 ... tested 10 epochs
         # [784, 400, 20, 400, 784] -> 0.9526 ... tested 5 epochs
-        lyrsNeus = [inputNeusNum, 256,128]
-        lyrsNeus = ri.Ask_Add_Array_Int("Input new layer Neurons num.", lyrsNeus, 50)
+        lyrsNeus = [inputNeusNum, 512, 256,128]
+        lyrsNeus = ri.Ask_Add_Array_Int(\
+            "Input new layer Neurons num.", lyrsNeus, 50)
         
-        bottleneckNeuNum = ri.Ask_Input_Integer("Input BottleNeck(Code) Layer Neurons num.", 10)
+        bottleneckNeuNum = ri.Ask_Input_Integer(\
+            "Input BottleNeck(Code) Layer Neurons num.", 10)
         lyrsNeus.append(bottleneckNeuNum)
         for nNeu in reversed(lyrsNeus[1:-1]):
             lyrsNeus.append(nNeu)
@@ -150,7 +152,7 @@ def Main():
         #net = RvNeuralEnDeCoder( 
         #   RvNeuralEnDeCoder.LayersNeurons_To_RvNeuralLayers(lyrsNeus))
         #net = RvNeuralEnDeCoder.Class_Create_LayersNeurons(lyrsNeus)
-        net = rn.RvNeuralEnDeCoder(lyrsNeus)  # ([784,50,10])
+        endecoder = rn.RvNeuralEnDeCoder(lyrsNeus)  # ([784,50,10])
         
         initialWeights = True
         
@@ -160,29 +162,29 @@ def Main():
     # Ask nmtivation  ------------------_----------
     enumActivation = ri.Ask_Enum("Select Activation method.", 
          nm.EnumActivation,  nm.EnumActivation.afSigmoid)
-    for lyr in net.NeuralLayers:
+    for lyr in endecoder.NeuralLayers:
         lyr.Set_EnumActivation(enumActivation)
     
-    net.Motoring_TrainningProcess = rn.Debug
+    endecoder.Motoring_TrainningProcess = rn.Debug
 
-    net.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
-    if net.NetEnableDropOut:
+    endecoder.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
+    if endecoder.NetEnableDropOut:
         enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
         nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
         rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
-        net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
+        endecoder.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
     
     monitoring = ri.Ask_YesNo("Watch training process?", "y")
-    net.Motoring_TrainningProcess = monitoring
+    endecoder.Motoring_TrainningProcess = monitoring
          
     
     # Auto-Caculate proper hyper pameters ---
     DoEvaluate_ProperParams = ri.Ask_YesNo("Auto-Caculating proper hyper pameters?", "n")
     if DoEvaluate_ProperParams:
         loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_lmbda(
-                net, net.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
+                net, endecoder.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
         loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_learnRate(
-                net, net.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
+                net, endecoder.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
     else:      
         loop,stepNum,learnRate,lmbda = rf.Ask_Input_SGD(loop,stepNum,learnRate,lmbda)
     
@@ -191,14 +193,14 @@ def Main():
 
     start = time.time()   
     # Start Training-
-    if (None!=net):
-        encoder, decoder = net.Build_Encoder_Decoder( \
+    if (None!=endecoder):
+        encoder, decoder = endecoder.Build_Encoder_Decoder( \
             lstTrain, loop, stepNum, learnRate, lmbda, initialWeights, digitIdOnly)
     
     dT = time.time()-start
     
     
-    rf.Save_NetworkDataFile(net, fnNetworkData, 
+    rf.Save_NetworkDataFile(endecoder, fnNetworkData, 
             loop,stepNum,learnRate,lmbda, dT, ".endecoder")
 
     fn1 = rf.Save_NetworkDataFile(encoder, 
@@ -221,9 +223,9 @@ def Main():
 #%% Test Section *********************************************************************
     
 
-#net = rn.RvNeuralEnDeCoder([784,50,10,50,784])
-#ru.ImageFilesToAvi(net.VideoImagePath, 
-#                   "{}{}".format(net.VideoImagePath, "EnDeCoder.avi") )
+#endecoder = rn.RvNeuralEnDeCoder([784,50,10,50,784])
+#ru.ImageFilesToAvi(endecoder.VideoImagePath, 
+#                   "{}{}".format(endecoder.VideoImagePath, "EnDeCoder.avi") )
     
     
 

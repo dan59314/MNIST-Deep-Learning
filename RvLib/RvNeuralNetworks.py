@@ -489,7 +489,7 @@ class RvConvolutionLayer(RvNeuralLayer):
                 self.__Create_File(*args)  
             elif isinstance(args[0], object): # lyrObj
                 self.__Create_RefLyrObj(*args)        
-            
+             
         
         
     def __Create_Normal(self, inputShape=[1,1,1], # eg. [pxlW, pxlH, Channel]
@@ -1099,7 +1099,7 @@ class RvBaseNeuralNetwork(object):
         for i in range(shape[0]):
             for j in range(shape[1]):
                 if ( random.randint(0,10) == 0 ):
-                  oneInput[i][j] = min(1.0, oneInput[i][j]+np.random.random()*strength)  
+                  oneInput[i][j] = min(1.0, oneInput[i][j]+np.random.random())  
                 #oneInput[i][j] = min(1.0, oneInput[i][j]+np.random.random()*strength)                
         return oneInput
                 
@@ -1110,7 +1110,11 @@ class RvBaseNeuralNetwork(object):
             for inputNeusNum, lyrNeusNum in \
                 zip(layersNeuronsNum[:-1], layersNeuronsNum[1:]) ]
         
-    
+    @staticmethod    
+    def CreateLabelsY(numY, labelId):
+        e = np.zeros((numY, 1))
+        e[labelId] = 1.0
+        return e    
     
     """=============================================================
     Constructor :
@@ -1218,7 +1222,21 @@ class RvBaseNeuralNetwork(object):
         self.Train_LearnRate = refNetObj.Train_LearnRate
         self.Train_Lmbda = refNetObj.Train_Lmbda
         self.Train_TimeSec = refNetObj.Train_TimeSec      
+        # Method -------------------------------------------
+        self.PreProcessInput = refNetObj.PreProcessInput
+        self.PreProcessOutput = refNetObj.PreProcessOutput
           
+        
+    def __PreProcessInput(self, inputX):
+       if self.PreProcessInput == None: return inputX
+       else: return self.PreProcessInput(inputX)
+        
+        
+    def __PreProcessOutput(self, outputY):
+       if self.PreProcessOutput == None: return outputY
+       else: return self.PreProcessOutput(outputY)
+        
+        
         
     def __Initial_Members(self):   
         self.NeuralLayers = []
@@ -1241,6 +1259,9 @@ class RvBaseNeuralNetwork(object):
             self.__Caculate_Sum_LayersCostDerivations_Normal
         self.Total_Cost = self.__Total_Cost_Normal
         self.Accuracy = self.__Accuracy_Normal
+        # Method -------------------------------------------
+        self.PreProcessInput = None
+        self.PreProcessOutput = None
         
         path = "..\\TmpLogs\\{}\\".format(self.__class__.__name__)
         rfi.ForceDir(path) #if not os.path.isdir(path): os.mkdir(path)
@@ -1320,34 +1341,41 @@ class RvBaseNeuralNetwork(object):
     """----------------------------------------------------------------------------
     # 計算所有資料 對 所有神經元 Cost 偏微分的加總
     """
-    def __Caculate_Sum_LayersCostDerivations_Normal(self, inputDatas, 
+    
+    def __Add_LayersCostDerivations0(self, inputX, labelY, sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias):
+         # 正向計算所有有層的所有神經元的 valueZ, activation       
+        lyrsNeusZs, lyrsNeusActvs = self.__LayersNeurons_FeedForward(inputX) 
+  
+        # 計算 cost 對單筆 dataTuples[]的　所有 biases 和 weights 的偏微分
+        lyrsNeus_dCost_dWei, lyrsNeus_dCost_dBias = \
+            self.__LayersNeurons_BackPropagation(inputX, labelY, lyrsNeusZs, lyrsNeusActvs) 
+
+        # 逐一累加到所屬的 lyrsNeus_dCost_dBias[layer, neuron]　
+        sum_lyrsNeus_dCost_dWei = [nw+dnw for nw, dnw in 
+            zip(sum_lyrsNeus_dCost_dWei, lyrsNeus_dCost_dWei)]
+        sum_lyrsNeus_dCost_dBias = [nb+dnb for nb, dnb in 
+            zip(sum_lyrsNeus_dCost_dBias, lyrsNeus_dCost_dBias)]
+        
+        return sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias                      
+            
+        
+        
+    def __Caculate_Sum_LayersCostDerivations_Normal(self, dataTuples, 
                 trainOnlyDigit=-1):
         
         # 為所有層的所有神經元配置空間，儲存 dCost 對所屬 weight 和 bias 的偏微分  
         sum_lyrsNeus_dCost_dBias = self.__Create_ArrayOf_LayersNeuronsBiases(0.0)
         sum_lyrsNeus_dCost_dWei = self.__Create_ArrayOf_LayersNeuronsWeights(0.0) 
         
-        
-        # 遍覽 inputDatas[] 內每筆資料，計算每筆input產生的偏微分，加總起來 ---------------            
-        for eachX, eachY in inputDatas: #每筆inputDatas[] = [x[784], y[10]]
+        # 遍覽 dataTuples[] 內每筆資料，計算每筆input產生的偏微分，加總起來 ---------------            
+        for eachX, eachY in dataTuples: #每筆dataTuples[] = [x[784], y[10]]
             digitId = np.argmax(eachY)          
             doTrain = (digitId == trainOnlyDigit) or (trainOnlyDigit<0)
             if doTrain:                           
-                # 正向計算所有有層的所有神經元的 valueZ, activation       
-                lyrsNeusZs, lyrsNeusActvs = \
-                    self.__LayersNeurons_FeedForward(eachX) 
-  
-                labelY = eachY
-                
-                # 計算 cost 對單筆 inputDatas[]的　所有 biases 和 weights 的偏微分
-                lyrsNeus_dCost_dWei, lyrsNeus_dCost_dBias = \
-                    self.__LayersNeurons_BackPropagation(eachX, labelY, lyrsNeusZs, lyrsNeusActvs)                        
-                    
-                # 逐一累加到所屬的 lyrsNeus_dCost_dBias[layer, neuron]　
-                sum_lyrsNeus_dCost_dWei = [nw+dnw for nw, dnw in 
-                    zip(sum_lyrsNeus_dCost_dWei, lyrsNeus_dCost_dWei)]
-                sum_lyrsNeus_dCost_dBias = [nb+dnb for nb, dnb in 
-                    zip(sum_lyrsNeus_dCost_dBias, lyrsNeus_dCost_dBias)]
+                # 正向計算所有有層的所有神經元的 valueZ, activation, cost對 wei, bias 微分       
+                sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias = \
+                    self.__Add_LayersCostDerivations0(eachX, eachY,
+                        sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias)                    
             
         return sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias
     
@@ -1355,41 +1383,72 @@ class RvBaseNeuralNetwork(object):
         
     
     
-    def __Caculate_Sum_LayersCostDerivations_EnDeCoder(self, inputDatas, 
-                trainOnlyDigit=-1):
-        
-        if self.NeuralLayers[0].Get_InputNum() != self.NeuralLayers[-1].Get_NeuronsNum():
-          if Debug: print("Input Dimention should equal Output Dimention here")
-          return
-        
+    def __Caculate_Sum_LayersCostDerivations_EnDeCoder(self, dataTuples, 
+                trainOnlyDigit=-1):        
         # 為所有層的所有神經元配置空間，儲存 dCost 對所屬 weight 和 bias 的偏微分  
         sum_lyrsNeus_dCost_dBias = self.__Create_ArrayOf_LayersNeuronsBiases(0.0)
         sum_lyrsNeus_dCost_dWei = self.__Create_ArrayOf_LayersNeuronsWeights(0.0) 
         
-        
-        # 遍覽 inputDatas[] 內每筆資料，計算每筆input產生的偏微分，加總起來 ---------------
-        for eachX, eachY in inputDatas: #每筆inputDatas[] = [x[784], y[10]]
+        # 遍覽 dataTuples[] 內每筆資料，計算每筆input產生的偏微分，加總起來 ---------------
+        for eachX, eachY in dataTuples: #每筆dataTuples[] = [x[784], y[10]]
             digitId = np.argmax(eachY)                
             doTrain = (digitId == trainOnlyDigit) or (trainOnlyDigit<0)
-            if doTrain:         
-                # 正向計算所有有層的所有神經元的 valueZ, activation       
-                lyrsNeusZs, lyrsNeusActvs = \
-                    self.__LayersNeurons_FeedForward(eachX)   
-                
-                # 計算 cost 對單筆 inputDatas[]的　所有 biases 和 weights 的偏微分
-                lyrsNeus_dCost_dWei, lyrsNeus_dCost_dBias = \
-                    self.__LayersNeurons_BackPropagation(eachX, eachX, lyrsNeusZs, lyrsNeusActvs)
-                    #self.__LayersNeurons_BackPropagation(eachX, eachX) 以自己的影像當作目標 label
-                    
-                # 逐一累加到所屬的 lyrsNeus_dCost_dBias[layer, neuron]　
-                sum_lyrsNeus_dCost_dWei = [nw+dnw for nw, dnw in 
-                    zip(sum_lyrsNeus_dCost_dWei, lyrsNeus_dCost_dWei)]
-                sum_lyrsNeus_dCost_dBias = [nb+dnb for nb, dnb in 
-                    zip(sum_lyrsNeus_dCost_dBias, lyrsNeus_dCost_dBias)]
+            if doTrain:  
+                 # 正向計算所有有層的所有神經元的 valueZ, activation, cost對 wei, bias 微分
+                if (None!=self.PreProcessInput) or (None!=self.PreProcessOutput):  
+                  # 非常耗時，準備資料時預先作。self.PreProcessInput()，可將 input blur，當作 sharpness
+                  sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias = \
+                    self.__Add_LayersCostDerivations0(\
+                        self.__PreProcessInput(eachX), 
+                        self.__PreProcessOutput(eachX),  # 以自己的影像當作目標 label
+                        sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias)
+                else:
+                  # 正向計算所有有層的所有神經元的 valueZ, activation, cost對 wei, bias 微分       
+                  sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias = \
+                    self.__Add_LayersCostDerivations0(eachX, eachX,  # 以自己的影像當作目標 label
+                        sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias)
             
         return sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias
     
+    
+    
+    def __Caculate_Sum_LayersCostDerivations_EnDeCoder_AssignOutputY(self, dataTuples, 
+                trainOnlyDigit=-1):        
+        # 為所有層的所有神經元配置空間，儲存 dCost 對所屬 weight 和 bias 的偏微分  
+        sum_lyrsNeus_dCost_dBias = self.__Create_ArrayOf_LayersNeuronsBiases(0.0)
+        sum_lyrsNeus_dCost_dWei = self.__Create_ArrayOf_LayersNeuronsWeights(0.0) 
+        
+        # 遍覽 dataTuples[] 內每筆資料，計算每筆input產生的偏微分，加總起來 ---------------
+        for eachX, eachY in dataTuples: #每筆dataTuples[] = [x[784], y[10]]
+#            digitId = np.argmax(eachY)                
+#            doTrain = (digitId == trainOnlyDigit) or (trainOnlyDigit<0)
+#            if doTrain:  
+                 # 正向計算所有有層的所有神經元的 valueZ, activation, cost對 wei, bias 微分       
+                 sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias = \
+                    self.__Add_LayersCostDerivations0(eachX, eachY,  # 以自己的影像當作目標 label
+                        sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias)
             
+        return sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias
+            
+    
+    
+    def __Caculate_Sum_LayersCostDerivations_Descriminator(self, dataTuples, 
+                labelY=0):        
+        # 為所有層的所有神經元配置空間，儲存 dCost 對所屬 weight 和 bias 的偏微分  
+        sum_lyrsNeus_dCost_dBias = self.__Create_ArrayOf_LayersNeuronsBiases(0.0)
+        sum_lyrsNeus_dCost_dWei = self.__Create_ArrayOf_LayersNeuronsWeights(0.0) 
+        
+        # 遍覽 dataTuples[] 內每筆資料，計算每筆input產生的偏微分，加總起來 ---------------
+        for eachX,eachY in dataTuples: #每筆dataTuples[] = [x[784], y[10]]
+                # 正向計算所有有層的所有神經元的 valueZ, activation, cost對 wei, bias 微分       
+                sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias = \
+                    self.__Add_LayersCostDerivations0(eachX, np.array([[labelY]]),  # 以自己的影像當作目標 label
+                        sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias)
+            
+        return sum_lyrsNeus_dCost_dWei, sum_lyrsNeus_dCost_dBias
+    
+    
+    
         
     # 計算 輸出層的 Activations ------------------------------------------------------
     def __Caculate_OutputActivations_FeedForward(self, oneInput):  #前面加 "__xxxfuncname()" 表示 private
@@ -1420,7 +1479,7 @@ class RvBaseNeuralNetwork(object):
     
     
     # 計算每個輸出的 cost ------------------------------------------------
-    def __Total_Cost_Normal(self, inputDatas, lmbda, createLabelY=False, plotOutput=False):
+    def __Total_Cost_Normal(self, dataTuples, lmbda, createLabelY=False, plotOutput=False):
         cost = 0.0
         #drawDigits = [False]*10 # -> [False, False, False... False]
         if plotOutput: 
@@ -1429,22 +1488,22 @@ class RvBaseNeuralNetwork(object):
             outputFigs = [ [] for title in range(10)] #np.copy(digitFigs)
             nCol = 5 #int(np.sqrt(len(digitFigs)))
             nRow = 2 #int(len(digitFigs)/nCol)+1
-            pxls = len(inputDatas[0][0])
+            pxls = len(dataTuples[0][0])
             pxlW = int(np.sqrt(pxls))
             pxls = pxlW*pxlW
             dpi = 72
             zoom = 6   # 28 pxl * zoom
             
             pltInchW =  pxlW/dpi*nCol * zoom
-            Ypxls = self.NeuralLayers[-1].Get_NeuronsNum() #10 if createLabelY else len(inputDatas[0][1])
+            Ypxls = self.NeuralLayers[-1].Get_NeuronsNum() #10 if createLabelY else len(dataTuples[0][1])
             YpxlW = int(np.sqrt(Ypxls)) #+ (1 * (Ypxls%YpxlW>0) )
             Ypxls = YpxlW*YpxlW
             Yzoom = 50   # 4 pxl * zoom
             YpltInchW =  YpxlW/dpi*nCol * Yzoom
             
-        n_Data = len(inputDatas)
-        for x, y in inputDatas:
-            if createLabelY: y = self.CreateLabelsY(10, y)
+        n_Data = len(dataTuples)
+        for x, y in dataTuples:
+            if createLabelY: y = RvBaseNeuralNetwork.CreateLabelsY(10, y)
             digitId =  np.argmax(y)
             finalLyrNeuronsActvns = self.__Caculate_OutputActivations_FeedForward(x)
             # 以最後一層的 classCost計算 -------------------
@@ -1452,14 +1511,19 @@ class RvBaseNeuralNetwork(object):
             
             if plotOutput: 
                 if digitFigs[digitId]==[]:
-#                    digitFigs[digitId]=\
+#                    digitFigs[digitId]=
 #                      np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255
-                    digitFigs[digitId]=\
+                    digitFigs[digitId]= \
                       np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255      
-                    outputFigs[digitId]=\
+                    outputFigs[digitId]= \
                       np.array(finalLyrNeuronsActvns[:Ypxls].transpose()).reshape(YpxlW,YpxlW)*255
                       
         if plotOutput: 
+            inputShape = (len(dataTuples[0][0]), 1)
+            for i in range(len(digitFigs)):
+                if digitFigs[i]==[]:digitFigs[i]=np.full(inputShape,0) 
+            for i in range(len(outputFigs)):
+                if outputFigs[i]==[]:outputFigs[i]=np.full(inputShape,0) 
             #pltFn.Plot_Figures(digitFigs, nRow, nCol)    
             pltFn.Plot_Images(np.array(digitFigs),nRow,nCol, "Input","", pltInchW)
             pltFn.Plot_Images(np.array(outputFigs),nRow,nCol, "Output", "", YpltInchW)
@@ -1471,14 +1535,14 @@ class RvBaseNeuralNetwork(object):
     
     
     # 計算每個輸出的 cost ------------------------------------------------
-    def __Total_Cost_EnDeCoder(self, inputDatas, lmbda, createLabelY=False, plotOutput=False):
+    def __Total_Cost_EnDeCoder(self, dataTuples, lmbda, createLabelY=False, plotOutput=False):
         
         if plotOutput: 
             digitFigs = [ [] for title in range(10)]
             outputFigs = [ [] for title in range(10)] #np.copy(digitFigs)
             nCol = 5 #int(np.sqrt(len(digitFigs)))
             nRow = 2 #int(len(digitFigs)/nCol)+1
-            pxls = len(inputDatas[0][0])
+            pxls = len(dataTuples[0][0])
             pxlW = int(np.sqrt(pxls))
             pxls = pxlW*pxlW
             dpi = 72
@@ -1486,8 +1550,8 @@ class RvBaseNeuralNetwork(object):
             pltInchW =  pxlW/dpi*nCol * zoom
             
         cost = 0.0
-        n_Data = len(inputDatas)        
-        for x, y in inputDatas:                
+        n_Data = len(dataTuples)        
+        for x, y in dataTuples:                
             digitId =  np.argmax(y)
             finalLyrNeuronsActvns = self.__Caculate_OutputActivations_FeedForward(x)
             cost += self.NeuralLayers[-1].ClassCost.costValue(
@@ -1496,12 +1560,17 @@ class RvBaseNeuralNetwork(object):
             if plotOutput: 
                 if digitFigs[digitId]==[]:
                     fn = "{}_{}.png".format(self.__VidoeImageFn, self.CurLoop)
-                    digitFigs[digitId]=\
+                    digitFigs[digitId]= \
                       np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255      
-                    outputFigs[digitId]=\
+                    outputFigs[digitId]= \
                       np.array(finalLyrNeuronsActvns[:pxls].transpose()).reshape(pxlW,pxlW)*255
                       
-        if plotOutput:            
+        if plotOutput:       
+            inputShape = (len(dataTuples[0][0]), 1)
+            for i in range(len(digitFigs)):
+                if digitFigs[i]==[]:digitFigs[i]=np.full(inputShape,0) 
+            for i in range(len(outputFigs)):
+                if outputFigs[i]==[]:outputFigs[i]=np.full(inputShape,0)       
             pltFn.Plot_Images(np.array(digitFigs),nRow,nCol, "Input","", pltInchW)
             pltFn.Plot_Images(np.array(outputFigs),nRow,nCol, "Output", fn, pltInchW)
             
@@ -1511,19 +1580,108 @@ class RvBaseNeuralNetwork(object):
         return cost    
     
     
+    # 計算每個輸出的 cost ------------------------------------------------
+    def __Total_Cost_EnDeCoder_AssignOutputY(self, dataTuples, lmbda, createLabelY=False, plotOutput=False):
+        
+        if plotOutput: 
+            nCol = 3 #int(np.sqrt(len(digitFigs)))
+            nRow = 1 #int(len(digitFigs)/nCol)+1
+            pxls = len(dataTuples[0][0])
+            pxlW = int(np.sqrt(pxls))
+            pxls = pxlW*pxlW
+            dpi = 72
+            zoom = 6   # 28 pxl * zoom
+            pltInchW =  pxlW/dpi*nCol * zoom
+            ypxls = len(dataTuples[0][1])
+            ypxlW = int(np.sqrt(ypxls))
+            ypxls = ypxlW*ypxlW
+            
+        cost = 0.0
+        n_Data = len(dataTuples)        
+        for x, y in dataTuples:                
+            #digitId =  np.argmax(y)
+            finalLyrNeuronsActvns = self.__Caculate_OutputActivations_FeedForward(x)
+            cost += self.NeuralLayers[-1].ClassCost.costValue(
+                      finalLyrNeuronsActvns, x)/n_Data
+                
+            if plotOutput: 
+                plotOutput = False   
+                fn = "{}_{}.png".format(self.__VidoeImageFn, self.CurLoop)
+                img1 = np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255
+                img2 = np.array(y[:ypxls].transpose()).reshape(ypxlW,ypxlW)*255   
+                img3 = np.array(finalLyrNeuronsActvns[:ypxls].transpose()).reshape(ypxlW,ypxlW)*255
+                pltFn.Plot_Images([img1,img2,img3], nRow,nCol,
+                    "\t input  \t /  \t lableY  \t /  \t output", fn, pltInchW)            
+            
+        # Regularization = lmbda/2n * Sum(wei^2)
+        cost += 0.5*(lmbda/n_Data)*sum(
+            np.linalg.norm(lyr.NeuronsWeights)**2 for lyr in self.NeuralLayers)
+        return cost    
+    
+    
+    
+    # 計算每個輸出的 cost ------------------------------------------------
+    def __Total_Cost_Descriminator(self, dataTuples, lmbda, createLabelY=False, plotOutput=False):
+        
+        if plotOutput: 
+            inputShape = (len(dataTuples[0][0]), 1)
+            #digitFigs = [ np.full(inputShape,1) for title in range(10)]
+            digitFigs = [ [] for title in range(10)]
+            #outputFigs = [ [] for title in range(10)] #np.copy(digitFigs)
+            nCol = 5 #int(np.sqrt(len(digitFigs)))
+            nRow = 2 #int(len(digitFigs)/nCol)+1
+            pxls = len(dataTuples[0][0])
+            pxlW = int(np.sqrt(pxls))
+            pxls = pxlW*pxlW
+            dpi = 72
+            zoom = 6   # 28 pxl * zoom
+            pltInchW =  pxlW/dpi*nCol * zoom
+            
+        cost = 0.0;  digitId=0
+        n_Data = len(dataTuples)        
+        for x, y in dataTuples:                
+            digitId =  np.argmax(y)
+            finalLyrNeuronsActvns = self.__Caculate_OutputActivations_FeedForward(x)
+            cost += self.NeuralLayers[-1].ClassCost.costValue(
+                      finalLyrNeuronsActvns, x)/n_Data
+                
+            if plotOutput: 
+                if digitId<len(digitFigs) and digitFigs[digitId]==[]:
+                    fn = "{}_{}.png".format(self.__VidoeImageFn, self.CurLoop)
+                    digitFigs[digitId]= \
+                      np.array(x[:pxls].transpose()).reshape(pxlW,pxlW)*255      
+#                    outputFigs[digitId]= \
+#                      np.array(finalLyrNeuronsActvns[:pxls].transpose()).reshape(pxlW,pxlW)*255
+                                      
+        if plotOutput:       
+            inputShape = (len(dataTuples[0][0]), 1)
+            for i in range(len(digitFigs)):
+                if digitFigs[i]==[]:digitFigs[i]=np.full(inputShape,0) 
+#            for i in range(len(outputFigs)):
+#                if outputFigs[i]==[]:outputFigs[i]=np.full(inputShape,0)       
+            pltFn.Plot_Images(np.array(digitFigs),nRow,nCol, "Input","", pltInchW)
+#            pltFn.Plot_Images(np.array(outputFigs),nRow,nCol, "Output", fn, pltInchW)
+            
+        # Regularization = lmbda/2n * Sum(wei^2)
+        cost += 0.5*(lmbda/n_Data)*sum(
+            np.linalg.norm(lyr.NeuronsWeights)**2 for lyr in self.NeuralLayers)
+        return cost    
+    
+    
+    
     # 計算 y=a 辨識正確的data 數量-----------------------------------------
-    def __Accuracy_Normal(self, inputDatas, convert=False):
+    def __Accuracy_Normal(self, dataTuples, convert=False):
         if convert:
             # 將 計算結果 a 和 label 放在 array[a,y], np.argmax(y):找出 y[]中最大值所在的 idx
           results = \
              [(np.argmax(self.__Caculate_OutputActivations_FeedForward(x)), np.argmax(y))
-              for (x, y) in inputDatas]
+              for (x, y) in dataTuples]
         else:
           results = \
              [(np.argmax(self.__Caculate_OutputActivations_FeedForward(x)), y)
-              for (x, y) in inputDatas]
+              for (x, y) in dataTuples]
         #隨機畫出測試的數字 ------    
-        #rf.Plot_Digit(inputDatas[self.__RandomState.randint(0,len(inputDatas))])
+        #rf.Plot_Digit(dataTuples[self.__RandomState.randint(0,len(dataTuples))])
         # 瀏覽所有結果，如果
         iCorrectNum = sum(int(x == y) for (x, y) in results)
         
@@ -1531,14 +1689,14 @@ class RvBaseNeuralNetwork(object):
     
    
     # 計算 y=a 辨識正確的data 數量-----------------------------------------
-    def __Accuracy_EnDeCoder(self, inputDatas, convert=False):
+    def __Accuracy_EnDeCoder(self, dataTuples, convert=False):
         
         errSum = 0.0
-        nDatas = len(inputDatas)
-        outputNeus = len(inputDatas[0][0])
+        nDatas = len(dataTuples)
+        outputNeus = len(dataTuples[0][0])
         iCorrectNum = 0
-        for (x, y) in inputDatas:
-            digitId =  np.argmax(y)
+        for (x, y) in dataTuples:
+            #digitId =  np.argmax(y)
             acts = self.__Caculate_OutputActivations_FeedForward(x)
 #                acts = self.__Caculate_OutputActivations_FeedForward_ClassActivation(x,
 #                    nm.Activation_Sigmoid)
@@ -1558,7 +1716,70 @@ class RvBaseNeuralNetwork(object):
         iCorrectNum = abs(nDatas*1.0 - errSum)
         
         return iCorrectNum 
+    
+    
+    # 計算 y=a 辨識正確的data 數量-----------------------------------------
+    def __Accuracy_EnDeCoder_AssignOutputY(self, dataTuples, convert=False):
+        
+        errSum = 0.0
+        nDatas = len(dataTuples)
+        outputNeus = len(dataTuples[0][0])
+        iCorrectNum = 0
+        for (x, y) in dataTuples:
+            #digitId =  np.argmax(y)
+            acts = self.__Caculate_OutputActivations_FeedForward(x)
+#                acts = self.__Caculate_OutputActivations_FeedForward_ClassActivation(x,
+#                    nm.Activation_Sigmoid)
+            """
+            np.linalg.norm(x, ord=None, axis=None, keepdims=False)
+            默認	二范數：ℓ2 ->	sqrt(x1^2 + x2^2 + .....)
+            ord=2	二范數：ℓ2 ->	同上
+            ord=1	一范數：ℓ1 ->	|x1|+|x2|+…+|xn|
+            ord=np.inf	無窮范數：ℓ∞ ->		max(|xi|)
+            """
+            #err = (np.linalg.norm(acts-decoderLabels[digitId])**2 )/outputNeus
+            # np.linalg.norm([x1,x2...xn], ord=1) -> abs(x1) + abs(x2) +....
+            err = (np.linalg.norm(acts-y, ord=1) ) /outputNeus
+            # 加總所有 error
+            errSum += err
+            
+        iCorrectNum = abs(nDatas*1.0 - errSum)
+        
+        return iCorrectNum 
+    
 
+
+    def __Accuracy_Descriminator(self, dataTuples, convert=False):
+        
+        errSum = 0.0
+        nDatas = len(dataTuples)
+        outputNeus = len(dataTuples[0][0])
+        iCorrectNum = 0
+        for (x, y) in dataTuples:
+            #digitId =  np.argmax(y)
+            acts = self.__Caculate_OutputActivations_FeedForward(x)
+#                acts = self.__Caculate_OutputActivations_FeedForward_ClassActivation(x,
+#                    nm.Activation_Sigmoid)
+            """
+            np.linalg.norm(x, ord=None, axis=None, keepdims=False)
+            默認	二范數：ℓ2 ->	sqrt(x1^2 + x2^2 + .....)
+            ord=2	二范數：ℓ2 ->	同上
+            ord=1	一范數：ℓ1 ->	|x1|+|x2|+…+|xn|
+            ord=np.inf	無窮范數：ℓ∞ ->		max(|xi|)
+            """
+            #err = (np.linalg.norm(acts-decoderLabels[digitId])**2 )/outputNeus
+            # np.linalg.norm([x1,x2...xn], ord=1) -> abs(x1) + abs(x2) +....
+            err = (np.linalg.norm(acts-x, ord=1) ) /outputNeus
+            # 加總所有 error
+            errSum += err
+            
+        iCorrectNum = abs(nDatas*1.0 - errSum)
+        
+        return iCorrectNum 
+    
+    
+    
+    
     
            
     def __Write_NetworkData(self, pF):          
@@ -1587,11 +1808,11 @@ class RvBaseNeuralNetwork(object):
     # 新的 nBiases = oBiases[] - learnRate * d(Cost)/d(bias)
     # 新的 nWeis = oWeis[] - learnRate * d(Cost)/d(wei)
     """
-    def __Update_LayersNeurons_Weights_Biases(self, inputDatas, learnRate, trainOnlyDigit=-1): 
-        n_Data = len(inputDatas) 
+    def __Update_LayersNeurons_Weights_Biases(self, dataTuples, learnRate, trainOnlyDigit=-1): 
+        n_Data = len(dataTuples) 
         # 計算所有 layers 的所有 Neurons 的 Cost偏微分, dCost/dWei, dCost/dBia 
         lyrsNeus_dCost_dWei_sum, lyrsNeus_dCost_dBias_sum = \
-            self.Caculate_Sum_LayersCostDerivations(inputDatas, trainOnlyDigit)        
+            self.Caculate_Sum_LayersCostDerivations(dataTuples, trainOnlyDigit)        
         
         # 計算新的 nWei = oWei - learnRate * nw,   nw = d(Cost)/d(wei) 
         # Adagrad learnRate = learnRate*nW / sqrt(sum(grad(i)^2))
@@ -1614,7 +1835,7 @@ class RvBaseNeuralNetwork(object):
 
     def __Show_TrainingInfo(self, sFunc, training_data=None, trainOnlyDigit=-1):
         print("\n************************************************")
-        print("{}() with Stochastic Gradient Desent ********".format(sFunc))
+        print("{} with Stochastic Gradient Desent ********".format(sFunc))
         if trainOnlyDigit in (0,10): print("Train Only Digit = {}".format(trainOnlyDigit))
         print("Best Accuracy = {}".format(self.BestAccuracyRatio))
         print("DropOut={}, DropRatio={}, DropOutMethod={}".
@@ -1665,7 +1886,7 @@ class RvBaseNeuralNetwork(object):
         # np.linalg.norm([x1,x2...xn], ord=1) -> abs(x1) + abs(x2) +....
         return 1.0 - (np.linalg.norm(outputY-inputX, ord=1) ) / len(inputX)
              
-             
+               
     def Get_InputNum(self):
         if len(self.NeuralLayers)<=0: return 0            
         return self.NeuralLayers[0].Get_InputNum()
@@ -1785,25 +2006,34 @@ class RvBaseNeuralNetwork(object):
 
         
     def Update_LayersNeurons_Weights_Biases_OneInput(self, 
-            inputDatas, learnRate, trainOnlyDigit=-1):   
+            dataTuples, learnRate, trainOnlyDigit=-1):   
         
         #Funciton Initialization ------------------------------
-#        if self.NeuralLayers[-1].Get_NeuronsNum()==self.NeuralLayers[0].Get_InputNum():
-        self.Caculate_Sum_LayersCostDerivations = \
-            self._RvBaseNeuralNetwork__Caculate_Sum_LayersCostDerivations_EnDeCoder 
-        self.Total_Cost = self.__Total_Cost_EnDeCoder
-        self.Accuracy = self.__Accuracy_EnDeCder           
+        if self.__class__.__name__ == RvBaseNeuralNetwork.__name__:   
+            self.Caculate_Sum_LayersCostDerivations = \
+                self.__Caculate_Sum_LayersCostDerivations_Normal
+            self.Total_Cost = \
+                self.__Total_Cost_EnDeCoder
+            self.Accuracy = \
+                self.__Accuracy_Normal  
+        else:        
+            self.Caculate_Sum_LayersCostDerivations = \
+                self._RvBaseNeuralNetwork__Caculate_Sum_LayersCostDerivations_Normal
+            self.Total_Cost = \
+                 self._RvBaseNeuralNetwork__Total_Cost_EnDeCoder
+            self.Accuracy = \
+                 self._RvBaseNeuralNetwork__Accuracy_Normal          
 #        else:
-#            self.Caculate_Sum_LayersCostDerivations = \
+#            self.Caculate_Sum_LayersCostDerivations = 
 #                self._RvBaseNeuralNetwork__Caculate_Sum_LayersCostDerivations_Normal
 #            self.Total_Cost = self._RvBaseNeuralNetwork__Total_Cost_Normal
 #            self.Accuracy = self._RvBaseNeuralNetwork__Accuracy_Normal
         
                 
-        inputDatas = np.array(inputDatas)
-        self.__Update_LayersNeurons_Weights_Biases(inputDatas, learnRate, trainOnlyDigit)
+        dataTuples = np.array(dataTuples)
+        self.__Update_LayersNeurons_Weights_Biases(dataTuples, learnRate, trainOnlyDigit)
         
-        
+    
     
  
     # 預測某張圖的數字 ------------------------------------
@@ -1863,8 +2093,7 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
             
         if (None==training_data): return 
         
-        self._RvBaseNeuralNetwork__Show_TrainingInfo("Train", training_data, trainOnlyDigit)
-        
+        self._RvBaseNeuralNetwork__Show_TrainingInfo("Train()", training_data, trainOnlyDigit)
         
         cMinLoopToPlotDot = 30    
         
@@ -2068,10 +2297,6 @@ class RvNeuralNetwork(RvBaseNeuralNetwork, object):
                               test_data, lmbda, blInitialWeiBias, trainOnlyDigit)
         
     
-    def CreateLabelsY(self, numY, labelId):
-        e = np.zeros((numY, 1))
-        e[labelId] = 1.0
-        return e
     
     # 預測結果--------------------------------------------------------------
     def Evaluate_Accuracy(self, test_data):
@@ -2188,6 +2413,10 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
         self.Train_Lmbda = lmbda
         self.Train_TimeSec = 0.0
         
+        # 最後一層必須強制為 sigmoid，限制輸出(0.0 ~ 1.0)之間
+        self.NeuralLayers[-1].Set_EnumActivation(nm.EnumActivation.afSigmoid)
+        
+        
         if (None==training_data): return  # or (None==decoderLabels)
         samplingStep = max(1, samplingStep)
         
@@ -2204,7 +2433,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
                 break
                 
         
-        self._RvBaseNeuralNetwork__Show_TrainingInfo("Build_Encoder_Decoder", training_data)
+        self._RvBaseNeuralNetwork__Show_TrainingInfo("Build_Encoder_Decoder()", training_data)
         
         #  如果是一樣的訓練集，則不初始化，可以累積訓練精度
         if blInitialWeiBias:
@@ -2221,12 +2450,12 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
         
         
         sConvLyr = "_CnvLyr" if ([]!=self.Get_ConvolutionLayerID()) else ""        
-        sDropOut = "_DropOut_{}".format(self.NetEnumDropOut.name) if self.NetEnableDropOut else ""        
+        #sDropOut = "_DropOut_{}".format(self.NetEnumDropOut.name) if self.NetEnableDropOut else ""        
         if (""!=sConvLyr) and (gFilterShareWeights):
             sConvLyr = "{}ShareWeis".format(sConvLyr)
             
-        fnNetworkData1 = "{}{}{}{}".format(self.LogPath, self.__class__.__name__, 
-            sConvLyr, sDropOut) 
+#        fnNetworkData1 = "{}{}{}{}".format(self.LogPath, self.__class__.__name__, 
+#            sConvLyr, sDropOut) 
         
         
         s1, s2 = "", ""
@@ -2352,7 +2581,7 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
                           None, n_train, None,training_accuracy, None)
               
         if Debug:        
-            aviFn = "{}{}".format(imgPath, "EnDeCoder.avi")
+            aviFn = "{}{}".format(imgPath, "EnDeCoder.avi", 1.0)
             if ru.ImageFilesToAvi(imgPath, aviFn):
                 os.system(r'start ' + aviFn)
                 
@@ -2400,6 +2629,22 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
           lmbda, blInitialWeiBias, trainOnlyDigit)
                 
                 
+    def Build_Encoder_Decoder_AssignOutputY(self, training_data, loop, samplingStep, learnRate,
+          lmbda=0.0, blInitialWeiBias=True, trainOnlyDigit=-1):  
+        
+        if len(training_data[0][1]) != self.NeuralLayers[-1].Get_NeuronsNum():
+          if Debug: print("training Data LableY Dimension should equal to Output Layer Neurons Num.")
+          return 
+        
+        #Funciton Initialization ------------------------------
+        self.Caculate_Sum_LayersCostDerivations = \
+          self._RvBaseNeuralNetwork__Caculate_Sum_LayersCostDerivations_EnDeCoder_AssignOutputY
+        self.Total_Cost = self._RvBaseNeuralNetwork__Total_Cost_EnDeCoder_AssignOutputY
+        self.Accuracy = self._RvBaseNeuralNetwork__Accuracy_EnDeCoder_AssignOutputY
+                
+        return self.__Build_Encoder_Decoder(training_data, loop, samplingStep, learnRate,
+          lmbda, blInitialWeiBias, trainOnlyDigit)
+                
 #    # 預測某張圖的數字 ------------------------------------
 #    def Plot_Output(self, oneInput):
 #        output = self._RvBaseNeuralNetwork__Caculate_OutputActivations_FeedForward(oneInput)
@@ -2407,3 +2652,334 @@ class RvNeuralEnDeCoder(RvBaseNeuralNetwork, object):
 #                
     
     
+
+    
+        
+#%%  ***************************************************************************
+
+class RvNeuralDescriminator(RvBaseNeuralNetwork, object):
+    
+    """=============================================================
+    Static:
+    ============================================================="""  
+        
+    
+    """=============================================================
+    Constructor :
+    ============================================================="""       
+    def __init__(self,  *args):
+        super().__init__(*args) #加上此，產生所有 parent 的 members 
+        #self.__newMember = xxxxx
+        if Debug: print(self.__class__.__name__)
+    
+    
+    
+    """=============================================================
+    Private :
+    ============================================================="""     
+    
+    def __Train_Descriminator(self, training_data, loop, samplingStep, learnRate,
+          lmbda=0.0, blInitialWeiBias=True, labelY=0):  
+         
+        
+        if blInitialWeiBias:
+            self.BestAccuracyRatio = 0.0
+            
+        self.WorstAccuracyRatio = 1.0
+        self.AverageAccuracyRatio = 0.0
+        self.AverageCost = 0.0
+        self.Train_Loop = 0
+        self.Train_LearnRate = learnRate
+        self.Train_Lmbda = lmbda
+        self.Train_TimeSec = 0.0
+        
+        # 最後一層必須強制為 sigmoid，限制輸出(0.0 ~ 1.0)之間
+        self.NeuralLayers[-1].Set_EnumActivation(nm.EnumActivation.afSigmoid)
+        
+        
+        if (None==training_data): return  # or (None==decoderLabels)
+        samplingStep = max(1, samplingStep)
+        
+                
+        # 中間一層，最後一層都必須強制為 sigmoid，限制輸出(0.0 ~ 1.0)之間
+#        for lyr in self.NeuralLayers:
+#            lyr.Set_EnumActivation(af.afSigmoid)
+            
+        for lyr in self.NeuralLayers:
+            if lyr._RvNeuralLayer__EnumActivation != af.afSigmoid:
+                print("Use Sigmoid for all layers or it will be overfitting")
+                break                
+        
+        sTrueFake=["Fake", "True"]
+        self._RvBaseNeuralNetwork__Show_TrainingInfo( \
+            "Train_Descriminator({})".format(sTrueFake[labelY==1]), training_data)
+        
+        #  如果是一樣的訓練集，則不初始化，可以累積訓練精度
+        if blInitialWeiBias:
+            for lyr in self.NeuralLayers:
+                lyr.Initial_Neurons_Weights_Biases()
+        
+        
+        #測試資料 test_data[10000] = [ x[784], y[1] ], [ x[784], y[1] ],..... 10000筆   
+        worstAccuracyRatio = 10000.0
+        bestAccuracyRatio = self.BestAccuracyRatio     
+        
+        if (self.Get_LayersNum()<1):        
+            return worstAccuracyRatio,bestAccuracyRatio 
+        
+        
+        sConvLyr = "_CnvLyr" if ([]!=self.Get_ConvolutionLayerID()) else ""        
+        sDropOut = "_DropOut_{}".format(self.NetEnumDropOut.name) if self.NetEnableDropOut else ""        
+        if (""!=sConvLyr) and (gFilterShareWeights):
+            sConvLyr = "{}ShareWeis".format(sConvLyr)
+            
+#        fnNetworkData1 = "{}{}{}{}".format(self.LogPath, self.__class__.__name__, 
+#            sConvLyr, sDropOut) 
+        
+        
+        s1, s2 = "", ""
+        
+        t0 = time.time()
+        
+        # 初始化參數 ----------------------------------------------------
+        n_train = len(training_data)
+        training_cost, training_accuracy = [], []
+        accuRatio, incAccuRatio, incCost = 0.0, 0.0, 0.0
+        
+        if Debug:        
+            fn = "{}{}_{}".format(self.LogPath, "DebugLog", 
+                  self.NeuralLayers[-1].ClassActivation.__name__)  
+            print("\nTraining({}), Sampling({})) ".
+                  format( n_train, int(n_train/samplingStep)+1 ))
+            print("loop({}), stepNum({}), learnRate({}), lmbda({})\n".
+                  format(loop, samplingStep, learnRate, lmbda))                
+            print("#loop({}) : Cost(), Accuracy()".format(loop) )        
+                
+        imgPath = "{}{}\\".format(self.VideoImagePath,"endecoder" )        
+        self._RvBaseNeuralNetwork__VidoeImageFn = "{}Update".format(imgPath)
+        rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
+        rfi.Delete_Files(imgPath, [".jpg",".png"])
+        
+        t00 = time.time() 
+        loops = np.arange(0,loop,1)
+        for j in range(loop):   
+            self.CurLoop = j
+            
+            t0 = time.time() 
+                    
+            self._RvBaseNeuralNetwork__RandomState.shuffle(training_data) #隨機打亂測試樣本順序
+            # 在 500000 筆訓練資料內，從0開始，累加10取樣，
+            # 共 500000/10 = 1000筆mini_trainingData[]
+            # [0~10], [10~20], [20~30]......[49990~49999]
+            mini_trainingData = [
+                training_data[k:k+samplingStep] 
+                for k in range(0, n_train, samplingStep)]
+            
+            
+            # 每次新 loop 時，才更新 DropOutMask -------------------
+            # 只有在每次新的 loop 時，每間格 2 次才更新 DropOut 的神經元
+            if self.NetEnableDropOut and ((j+1)%gDropOutPerLoop==0) and (loop-1 != j): #不是最後一筆
+                s2 = "DropOut({}, Ratio={})".format(self.NetEnumDropOut.name, self.NetDropOutRatio)
+                # 只更新隱藏層，輸出層[:=1]不更新-------------
+                for lyr in self.NeuralLayers[:-1]:
+                    lyr.Set_DropOut(True, self.NetEnumDropOut, self.NetDropOutRatio)    
+            else: s2 = ""
+                        
+            
+            if Debug: print("#{}: {}".format(j, s2))
+                            
+            # 利用取樣集合 mini_trainingData[]，逐一以每個小測試集，　更新 weights 和 biases 
+            for mini_batch in mini_trainingData:
+                self._RvBaseNeuralNetwork__Update_LayersNeurons_Weights_Biases(\
+                    mini_batch, learnRate, labelY)
+                            
+            #if 測試集開始之前，要先關掉 DropOut,測試集不能使用 DropOut
+            for lyr in self.NeuralLayers:
+                lyr.Set_DropOut(False)
+                                
+                
+            # 根據更新後的 Weights, Biases 重新計算 training_data的 cost, accuracy
+            train_cost = self.Total_Cost(training_data, lmbda, 
+                False, plotOutput=Debug)
+            
+            training_cost.append(train_cost)
+            train_accuracy = self.Accuracy(training_data, convert=True )
+            training_accuracy.append(train_accuracy)
+                                           
+            incCost += train_cost
+            accuRatio = train_accuracy/n_train
+            incAccuRatio += accuRatio
+        
+            if Debug:
+                if accuRatio > bestAccuracyRatio: 
+                    bestAccuracyRatio = accuRatio
+                    s1 = "<-- Best"
+                    fnSave = "{}ModelBest_{}.{}".format(imgPath, self.CurLoop, "endecoder") 
+                    fileAccu = self.Get_NetworkFileData(fnSave)
+                    if (bestAccuracyRatio>fileAccu):         
+                      self.Train_TimeSec = time.time()-t0
+                      self.BestAccuracyRatio = bestAccuracyRatio
+                      self.Train_Loop = j+1                
+                      self.Save_NetworkData(fnSave)                     
+                      print("Model saved as \"{}\"".format(fnSave))
+                else:
+                    s1 = ""            
+            
+            if accuRatio < worstAccuracyRatio:
+                worstAccuracyRatio = accuRatio
+            
+            if Debug:
+                print("\tTrain : Cost({:.4f}), Accuracy({:.4f}) {}".
+                    format(train_cost, accuRatio, s1))              
+                dt = time.time()-t0
+                sdT = timedelta(seconds=int(dt))
+                #sTime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                sTime = datetime.now().strftime('%m-%d, %H:%M:%S"')
+                print("\tTime={}\". {}".format(sdT,sTime))
+          
+                dt = time.time()-t00
+                elapseT = timedelta(seconds=int(dt))
+                remainT = dt*(loop/(j+1) - 1)
+                remainT = timedelta(seconds=int(remainT))
+                print("\tElapse={}\", Remain={}\"".format(elapseT,remainT))
+                    
+        if Debug:           
+            if self.Motoring_TrainningProcess:          
+                # 定義繪圖的字型資料 
+                font = {'family': 'serif',
+                        'color':  'red',
+                        'weight': 'normal',
+                        'size': 12,
+                    }                                
+                print("\nCost_Train: {:.4f} -> {:.4f}".
+                      format(training_cost[0],training_cost[-1]) )
+                print("Accu_Train: {:.4f} -> {:.4f}".
+                      format(training_accuracy[0]/n_train,training_accuracy[-1]/n_train) )
+                
+                rf.DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
+                          None, n_train, None,training_accuracy, None)
+              
+        if Debug:        
+            aviFn = "{}{}".format(imgPath, "EnDeCoder.avi")
+            if ru.ImageFilesToAvi(imgPath, aviFn):
+                os.system(r'start ' + aviFn)
+                
+        self.WorstAccuracyRatio = worstAccuracyRatio
+        self.BestAccuracyRatio = bestAccuracyRatio
+        self.AverageAccuracyRatio = incAccuRatio/loop
+        self.AverageCost = incCost/loop
+        
+        self.Train_TimeSec = time.time()-t0
+        
+            
+            
+    
+    
+    """=============================================================
+    Public :
+    ============================================================="""     
+    def Train_Descriminator(self, training_data, loop, samplingStep, learnRate,
+          lmbda=0.0, blInitialWeiBias=True, labelY=0):  
+                  
+        if 1 != self.NeuralLayers[-1].Get_NeuronsNum():
+          if Debug: print("Output Dimention should be 1 for Descriminator")
+          return 
+        
+        #Funciton Initialization ------------------------------
+        self.Caculate_Sum_LayersCostDerivations = \
+                self._RvBaseNeuralNetwork__Caculate_Sum_LayersCostDerivations_Descriminator
+        self.Total_Cost = self._RvBaseNeuralNetwork__Total_Cost_Descriminator
+        self.Accuracy = self._RvBaseNeuralNetwork__Accuracy_Descriminator
+            
+      
+        return self.__Train_Descriminator(training_data, loop, samplingStep, learnRate,
+          lmbda, blInitialWeiBias, labelY)
+                
+        
+        
+        
+        
+
+    
+    
+#%% ***************************************************************************
+    
+class RvNeuralGAN(RvBaseNeuralNetwork, object):
+    """=============================================================
+    Static:
+    ============================================================="""     
+#    @staticmethod
+#    def LayersNeurons_To_RvNeuralLayers( layersNeuronsNum ):
+#        return [ RvNeuralLayer(inputNeusNum, lyrNeusNum) 
+#            for inputNeusNum, lyrNeusNum in \
+#                zip(layersNeuronsNum[:-1], layersNeuronsNum[1:]) ]
+        
+    
+    
+    """=============================================================
+    Constructor :
+    ============================================================"""        
+    # 代替 overload constructor  
+    def __init__(self,  *args):
+        super().__init__(*args) #加上此，產生所有 parent 的 members 
+        #self.__newMember = xxxxx
+        nArgs = len(args)
+        if nArgs>0:            
+#            print("args[0] : {}".format(type(args[0])))
+#            print("args[0][0] : {}".format(type(args[0][0])))
+            if isinstance(args[0], str) and nArgs==2: # lyrfileName
+                self.__Create_File(*args)              
+            elif isinstance(args[0], object) and nArgs==2: # netObj
+                self.__Create_NetObj(*args)        
+#            elif isinstance(args[0], list):  
+#                if isinstance(args[0][0], RvNeuralLayer):
+#                    self.__Create_LayerObjects(*args)
+#                elif isinstance(args[0][0], int): 
+#                    self.__Create_LayerNeurons(*args)    
+            else:
+                print("Need InputNum and NeuronNum")        
+        else:
+            print("No Arguments")    
+            
+        if Debug: 
+            self.Show_LayersInfo()  
+            
+    
+    
+    """=============================================================
+    Private :
+    ============================================================="""  
+#    def __Create_LayerObjects(self, lstLayersObjs):
+#        self.NeuralLayers = lstLayersObjs
+#        # 最後一層強制為 sigmoid
+#        self.NeuralLayers[-1].Set_EnumActivation(nm.EnumActivation.afSigmoid)
+#        
+#    def __Create_LayerNeurons(self, lstLayersNeurons):
+#        self.__Create_LayerObjects( \
+#            RvNeuralNetwork.LayersNeurons_To_RvNeuralLayers(lstLayersNeurons)) 
+
+
+
+    def __Create_NetObj(self, generator, descriminator):
+        if (None==generator) or (None==descriminator): return
+#        self.NeuralLayers = refNetObj.NeuralLayers
+#        self.__Assign_Members(refNetObj)
+        
+        
+
+    def __Create_File(self, fileGenerator, fileDescriminator):
+        if not rfi.FileExists(fileGenerator): return #os.path.isfile(filename) return None # 看網路參數檔案存在否
+        if not rfi.FileExists(fileDescriminator): return #os.path.isfile(filename) return None # 看網路參數檔案存在否
+        
+        generator = RvNeuralEnDeCoder(fileGenerator)
+        #encoder = rn.RvNeuralEnDeCoder(fn2)
+        descriminator = RvNeuralDescriminator(fileDescriminator)       
+        self.__Create_NetObj(generator, descriminator)
+        
+        
+        
+#%%        
+        
+        
+        
+        

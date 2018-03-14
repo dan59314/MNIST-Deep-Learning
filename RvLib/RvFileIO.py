@@ -85,6 +85,17 @@ def Get_FilesInFolder(sDir, fileExts=[]):
 
 
 
+def Get_FoldersInFolder(sDir, depth=0):
+    sDir = os.path.abspath(sDir)
+    folders = []    
+    for root, dirs, files in os.walk(sDir, topdown=False):
+       #for name in files:
+       for name in dirs:
+          folders.append(os.path.join(root, name))
+                    
+    return folders
+
+
 
 def Delete_Files(sDir, delFileExts=[], deleteSubDir=False):
     if(sDir == '//' or sDir == "\\"): return
