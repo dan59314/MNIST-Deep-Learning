@@ -14,8 +14,10 @@ Deep Learning codes for MNIST with detailed explanation
   YouTube : http://www.youtube.com/dan59314/playlist
   
   Instructables : https://goo.gl/EwRGYA
-  
-  
+  
+  GooglePlay : https://play.google.com/store/apps/developer?id=%EF%BC%A4aniel+Lu+%E5%91%82%E8%8A%B3%E5%85%83
+  
+  
 
   This software may be freely copied, modified, and redistributed
   provided that this copyright notice is preserved on all copies.
@@ -42,7 +44,8 @@ Deep Learning codes for MNIST with detailed explanation
   
   Instructables : https://goo.gl/EwRGYA
   
-  
+  GooglePlay : https://play.google.com/store/apps/developer?id=%EF%BC%A4aniel+Lu+%E5%91%82%E8%8A%B3%E5%85%83
+
 
   使用或修改軟體，請註明引用出處資訊如上。未經過作者明示同意，禁止使用在商業用途。
   
