@@ -112,7 +112,7 @@ Deep Learning codes for MNIST with detailed explanation
 
 [MNIST GAN Video](https://youtu.be/_j_7gE34HsY)
 
-[![MNIST GAN](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/gan_01.png)](https://youtu.be/_j_7gE34HsY?t=0s "MNIST GAN Model") 
+[![MNIST GAN](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/gan_01.jpg)](https://youtu.be/_j_7gE34HsY?t=0s "MNIST GAN Model") 
 
 
     GAN:
