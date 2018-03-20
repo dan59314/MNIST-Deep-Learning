@@ -110,6 +110,15 @@ Deep Learning codes for MNIST with detailed explanation
 
 [![AutoEncoder Sharpen](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/vdoImg_3_0.png)](https://goo.gl/ykXHqz?t=0s "MNIST Sharpen Model") 
 
+[MNIST GAN Video](https://youtu.be/_j_7gE34HsY)
+
+[![MNIST GAN](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/gan_01.png)](https://youtu.be/_j_7gE34HsY?t=0s "MNIST GAN Model") 
+
+
+    GAN:
+        https://youtu.be/_j_7gE34HsY
+
+
 ------------------------------------------------------------------------------------
 ## What else you can do?
 
