@@ -774,3 +774,243 @@ WeightsMultiples: 104000
 Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
 Accuracy : Worst(0.9469617329473946), Best(0.9564768330596644)
 Elapsed Time(Seconds): 0:14:27 sec.
+
+DateTime : 2018-03-15 21:17:17
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [256, 100, 784]
+LayersWeightsNum: [200704, 25600, 78400]
+WeightsMultiples: 304704
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9690111963834466), Best(0.9719938001764749)
+Elapsed Time(Seconds): 0:11:30 sec.
+
+DateTime : 2018-03-15 21:17:17
+, 
+LayersName: ['RvNeuralLayer']
+LayersNeurons: [256]
+LayersWeightsNum: [200704]
+WeightsMultiples: 200704
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9690111963834466), Best(0.9719938001764749)
+Elapsed Time(Seconds): 0:11:30 sec.
+
+DateTime : 2018-03-15 21:17:17
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 784]
+LayersWeightsNum: [25600, 78400]
+WeightsMultiples: 104000
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9690111963834466), Best(0.9719938001764749)
+Elapsed Time(Seconds): 0:11:30 sec.
+
+DateTime : 2018-03-15 23:47:42
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [50, 1]
+LayersWeightsNum: [39200, 50]
+WeightsMultiples: 39250
+Hyper Pameters: Loop(100), stepNum(20000), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9792), Best(0.9905)
+Elapsed Time(Seconds): 0:28:14 sec.
+
+DateTime : 2018-03-17 15:14:46
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [50, 10]
+LayersWeightsNum: [39200, 500]
+WeightsMultiples: 39700
+Hyper Pameters: Loop(50), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9696), Best(0.9760)
+Elapsed Time(Seconds): 0:18:02 sec.
+
+DateTime : 2018-03-21 00:49:14
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 100, 10, 100, 400, 784]
+LayersWeightsNum: [313600, 40000, 1000, 1000, 40000, 313600]
+WeightsMultiples: 709200
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9052), Best(0.9397)
+Elapsed Time(Seconds): 1:28:10 sec.
+
+DateTime : 2018-03-21 00:49:15
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 100, 10]
+LayersWeightsNum: [313600, 40000, 1000]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9052), Best(0.9397)
+Elapsed Time(Seconds): 1:28:10 sec.
+
+DateTime : 2018-03-21 00:49:16
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9052), Best(0.9397)
+Elapsed Time(Seconds): 1:28:10 sec.
+
+DateTime : 2018-03-21 10:06:05
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 100, 10, 100, 400, 784]
+LayersWeightsNum: [313600, 40000, 1000, 1000, 40000, 313600]
+WeightsMultiples: 709200
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9414), Best(0.9468)
+Elapsed Time(Seconds): 0:12:44 sec.
+
+DateTime : 2018-03-21 10:06:06
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 100, 10]
+LayersWeightsNum: [313600, 40000, 1000]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9414), Best(0.9468)
+Elapsed Time(Seconds): 0:12:44 sec.
+
+DateTime : 2018-03-21 10:06:07
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9414), Best(0.9468)
+Elapsed Time(Seconds): 0:12:44 sec.
+
+DateTime : 2018-03-21 10:19:57
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 100, 10, 100, 400, 784]
+LayersWeightsNum: [313600, 40000, 1000, 1000, 40000, 313600]
+WeightsMultiples: 709200
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9398), Best(0.9494)
+Elapsed Time(Seconds): 0:13:22 sec.
+
+DateTime : 2018-03-21 10:19:58
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 100, 10]
+LayersWeightsNum: [313600, 40000, 1000]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9398), Best(0.9494)
+Elapsed Time(Seconds): 0:13:22 sec.
+
+DateTime : 2018-03-21 10:20:00
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9398), Best(0.9494)
+Elapsed Time(Seconds): 0:13:22 sec.
+
+DateTime : 2018-03-21 11:33:45
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 50, 1]
+LayersWeightsNum: [313600, 20000, 50]
+WeightsMultiples: 333650
+Hyper Pameters: Loop(10), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9780), Best(0.9997)
+Elapsed Time(Seconds): 0:47:57 sec.
+
+DateTime : 2018-03-21 18:59:42
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(50), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9945), Best(0.9948)
+Elapsed Time(Seconds): 0:13:21 sec.
+
+DateTime : 2018-03-21 18:59:43
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(50), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9945), Best(0.9948)
+Elapsed Time(Seconds): 0:13:21 sec.
+
+DateTime : 2018-03-21 18:59:44
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 50, 1]
+LayersWeightsNum: [313600, 20000, 50]
+WeightsMultiples: 333650
+Hyper Pameters: Loop(50), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.9945), Best(0.9948)
+Elapsed Time(Seconds): 0:13:21 sec.
+
+DateTime : 2018-03-21 23:10:52
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(100), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.1605), Best(0.1674)
+Elapsed Time(Seconds): 0:11:08 sec.
+
+DateTime : 2018-03-21 23:10:53
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(100), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.1605), Best(0.1674)
+Elapsed Time(Seconds): 0:11:08 sec.
+
+DateTime : 2018-03-21 23:10:53
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 50, 1]
+LayersWeightsNum: [313600, 20000, 50]
+WeightsMultiples: 333650
+Hyper Pameters: Loop(100), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.1605), Best(0.1674)
+Elapsed Time(Seconds): 0:11:08 sec.
+
+DateTime : 2018-03-22 10:03:33
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(100), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.4080), Best(0.4224)
+Elapsed Time(Seconds): 0:16:03 sec.
+
+DateTime : 2018-03-22 10:03:34
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [100, 400, 784]
+LayersWeightsNum: [1000, 40000, 313600]
+WeightsMultiples: 354600
+Hyper Pameters: Loop(100), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.4080), Best(0.4224)
+Elapsed Time(Seconds): 0:16:03 sec.
+
+DateTime : 2018-03-22 10:03:34
+, 
+LayersName: ['RvNeuralLayer', 'RvNeuralLayer', 'RvNeuralLayer']
+LayersNeurons: [400, 50, 1]
+LayersWeightsNum: [313600, 20000, 50]
+WeightsMultiples: 333650
+Hyper Pameters: Loop(100), stepNum(10), lr(0.1000), lmbda(5.0000)
+Accuracy : Worst(0.4080), Best(0.4224)
+Elapsed Time(Seconds): 0:16:03 sec.

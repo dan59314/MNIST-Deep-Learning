@@ -104,8 +104,8 @@ cl = rn.RvConvolutionLayer(inputShape,filterShape,filterStride)
 cl.Caculate_Neurons_Z_Activations(inputFlatten)
 cl.Plot_NeuronsWeights([10, 20])
 
-lyrData = cl.Get_LayerData()
-print("LyrData:{}".format(lyrData))
+#lyrData = cl.Get_LayerData()
+#print("LyrData:{}".format(lyrData))
 
     
     

@@ -197,12 +197,13 @@ def Predict_All(image, contours, imgW,imgH):
                 
 #%%
 
-fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".nnf"])
-aId = ri.Ask_SelectItem("Select network file", fn0s, 0)    
-fn1= fns[aId]
-#fn1 = ".\RvNeuralNetwork_NetData_CnvLyr_ShareWeights.nnf"
+fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".dnn",".cnn"])
+if len(fns)>0:
+  aId = ri.Ask_SelectItem("Select network file", fn0s, 0)    
+  fn1= fns[aId]
+  #fn1 = ".\RvNeuralNetwork_NetData_CnvLyr_ShareWeights.dnn"
 
-if (os.path.isfile(fn1)):
+  if (os.path.isfile(fn1)):
     net = rn.RvNeuralNetwork(fn1)
     if (None!=net):          
         camera = cv2.VideoCapture(0)

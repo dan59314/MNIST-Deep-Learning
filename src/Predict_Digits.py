@@ -80,12 +80,14 @@ lstV = list(lstV)
 lstT = list(lstT)
 
 
-fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".nnf"])
-aId = ri.Ask_SelectItem("Select Network file", fn0s, 0)    
-fn1= fns[aId]
-    
-accur1,t1 = rf.Predict_Digits_FromNetworkFile(fn1, lstT, True)
-print("File : \"{}\"\n  nmcu:{}, Time:{:.3} sec\n".format(fn1,accur1,t1))
+fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".cnn", ".dnn"])
+
+if len(fns)>0:
+    aId = ri.Ask_SelectItem("Select Network file", fn0s, 0)    
+    fn1= fns[aId]
+        
+    accur1,t1 = rf.Predict_Digits_FromNetworkFile(fn1, lstT, True)
+    print("File : \"{}\"\n  nmcu:{}, Time:{:.3} sec\n".format(fn1,accur1,t1))
 
 
     

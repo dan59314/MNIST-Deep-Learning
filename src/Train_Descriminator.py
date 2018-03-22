@@ -65,12 +65,149 @@ import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
 from RvNeuNetworkMethods import EnumDropOutMethod as drpOut
 import PlotFunctions as pltFn
+import RvFileIO as rfi
+
+
+
+
+#%% Global Variable
+
+randomState = np.random.RandomState(int(time.time()))
+    
+
 
 
 
 
 #%%  Function Section
 
+def Generate_FakeData(fakeDataNum):
+    fn1 = ".\\NetData\\RvNeuralEnDeCoder_DigitGenerator.decoder"
+    if not rfi.FileExists(fn1):
+        fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".decoder"])
+        if len(fns)>0:
+            aId = min(1, len(fns)-1) #0 #ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
+            fn1= fns[aId]               
+    if (os.path.isfile(fn1)): 
+        generator = rn.RvNeuralNetwork(fn1)    
+        if None!=generator:
+            return rn.RvNeuralDiscriminator.Create_FakeData_Generator(
+                generator, fakeDataNum)        
+    return []
+#            [ 
+#            tuple([ randomState.randn(len(aTuple[0]),1) , [fakeId] ]) 
+#            for aTuple in TrueDigit_sets[0] ]
+        
+        
+
+def Initial_PlotParams(pxls,nRow,nCol):    
+    # 設定繪圖參數 ----------------------------------
+#    nCol = 5 #int(np.sqrt(len(digitFigs)))
+#    nRow = 2 #int(len(digitFigs)/nCol)+1
+#    pxls = outputNum
+    pxlW = int(np.sqrt(pxls))
+    #pxls = pxlW*pxlW
+    dpi = 72
+    zoom = 6   # 28 pxl * zoom
+    pltInchW =  pxlW/dpi*nCol * zoom
+    digitFigs = [ np.full((pxlW,pxlW),0) for i in range(nRow*nCol)]
+    
+    return digitFigs, pxlW, pltInchW
+
+
+
+
+sResult = ["X", "O"]
+
+def Discriminate_Digits(net, lstT, plotDigit=True):
+    
+    threshold_True = 0.7
+    
+    sFakeReal = ['Fake', 'Real']
+    
+    nRow, nCol = 2, 5
+    digitNum = nRow*nCol
+    digitFigs, pxlW, pltInchW = Initial_PlotParams(len(lstT[0][0]),nRow,nCol)
+    digitTitles = ["" for a in digitFigs]
+    digitId=0
+    
+    # 隨機測試某筆數字 ----------------------------------------------    
+    start = time.time() 
+    
+    sampleNum= min(len(lstT), 1000) # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
+    plotNum = 30
+    plotMod = int(sampleNum/plotNum) + 1
+    correctNum=0    
+    failNum = 0
+    
+    for i in range(0, sampleNum):
+        
+        doPlot = (i%plotMod == 0)
+        aId = np.random.randint(0,len(lstT))
+        outputY = np.max(net.Get_OutputValues(lstT[aId][0]))
+        label = int(np.max(lstT[aId][1]))
+        result = (outputY>threshold_True)*1
+        if label==result: correctNum+=1
+        else: 
+            doPlot = (failNum<plotNum) 
+            failNum+=1
+            
+        if doPlot and plotDigit:
+#            s1 ="label={}, result={}  ( {:.3f} ) -> {} ".\
+#                 format(sFakeReal[label], sFakeReal[result], 
+#                        outputY, sResult[int(label==result)] )
+#            rf.Plot_Digit(lstT[aId], result, label)
+#            print(s1)
+#            # 畫線
+#            x1, y1 = [-1, 12], [1, 4]
+#            x2, y2 = [1, 10], [3, 2]
+#            plt.plot(x1, y1, x2, y2, marker = 'o')
+#            plt.show()
+            
+            s1 ="{}({:.3f}) -> {}".\
+                 format(sFakeReal[result], 
+                        outputY,sResult[int(label==result)] )
+            digitId = digitId % digitNum
+            digitFigs[ digitId ] = np.array(lstT[aId][0]).transpose().reshape(pxlW,pxlW)*255
+            digitTitles[ digitId ] = s1            
+            digitId+=1
+            
+            if (digitId==digitNum):
+              pltFn.Plot_Images(np.array(digitFigs),
+                  nRow,nCol, digitTitles, "", pltInchW)  
+              digitId = 0
+    
+    
+    dt = time.time()-start
+    
+    accurRatio = correctNum/sampleNum
+    print("\nAccuracy({:.3f}),  {}/{}(Correct/Total)".
+          format(accurRatio, correctNum, sampleNum))    
+    print("Elapsed(seconds)) : {:.3f} sec.\n".format(dt))    
+    return accurRatio,dt
+
+
+
+def Get_TrainData(lstTrain, sampleNum):
+    
+    print("\nPreparing ({}) Real/Fake Images....\n".format(sampleNum*2)  )
+    print("")
+    
+    # 準備 測試資料 -------------------------------------------    
+    MixDigit_set = rn.RvNeuralDiscriminator.Create_RealData(lstTrain, sampleNum)
+    
+    fake_set = rn.RvNeuralDiscriminator.Create_FakeData_RandomNoise(lstTrain, sampleNum)
+    MixDigit_set += fake_set
+    
+    # Generate Fake Data
+    genDigit_set = Generate_FakeData(sampleNum)
+    MixDigit_set += genDigit_set
+    randomState.shuffle(MixDigit_set)
+    
+    return MixDigit_set
+
+
+#%% Main Section
 
 
 def Main():
@@ -89,118 +226,106 @@ def Main():
     if not os.path.isdir(path):
         os.mkdir(path)           
     
-    fnNetworkData = "{}{}_NetData".format(path,rn.RvNeuralDescriminator.__name__)   
-    fnNetworkData1 = ""
+    fnNetworkData = "{}{}_DSCMNT".format(path,rn.RvNeuralDiscriminator.__name__)   
     
     
-    sampleNum = 1000
     #Hyper pameters -------------------------------------------    
     loop = 10  # loop effect，10, 30 all above 0.95
-    stepNum = sampleNum  # stepNum effect,　10->0.9,  100->0.5
+    stepNum = 10  # stepNum effect,　10->0.9,  100->0.5
     learnRate = 0.1  # learnRate and lmbda will affect each other
     lmbda = 5.0     #add lmbda(Regularization) to solve overfitting 
     
+    MixDigit_set = Get_TrainData(lstTrain, 1000)
     
+    sTrain = "y"
     
     # Training ***********************************************************
-    # Ask DoTraining-
-    DoTraining = ri.Ask_YesNo("Do Training?", "y")
-    if DoTraining:             
-        """
-        [784,50,10], loop=100, 0.9725
-        """
-         # Create RvNeuralDescriminator----------------------------------------------
-        inputNeusNum = len(lstTrain[0][0])
-        lyr1NeuNum = 50
-        outputNeuNum = 1 #len(lstTrain[0][1])
+    LoadAndTrain = ri.Ask_YesNo("Load exist model?", "n")        
+    if LoadAndTrain:    
+        fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".discriminator"])
+        aId = ri.Ask_SelectItem("Select Discriminator file", shortFns, 0)    
+        fn1= fns[aId]
+        discriminator = rn.RvNeuralDiscriminator(fn1) 
+        initialWeiBias = False
+        sTrain = "n"
         
-        lyrsNeus = [inputNeusNum, lyr1NeuNum]
-        lyrsNeus = ri.Ask_Add_Array_Int("Input new layer Neurons num.", lyrsNeus, lyr1NeuNum)
-        lyrsNeus.append(outputNeuNum)
+    else:                 
+         # Create RvNeuralDiscriminator----------------------------------------------
+        inputNeusNum = len(lstTrain[0][0])        
+        lyrsNeus = [inputNeusNum, 400, 50] # [784,50,1]
+        lyrsNeus = ri.Ask_Add_Array_Int(\
+            "Input new layer Neurons num.", lyrsNeus, 50)        
+#        bottleneckNeuNum = 784 #ri.Ask_Input_Integer("Input BottleNeck(Code) Layer Neurons num.", 10)
+#        lyrsNeus.append(bottleneckNeuNum)
+#        for nNeu in reversed(lyrsNeus[1:-1]):
+#            lyrsNeus.append(nNeu)
+        lyrsNeus.append(1)        
+        discriminator = rn.RvNeuralDiscriminator(lyrsNeus)  # ([784,50,10])                
+        initialWeiBias = True
         
-      
-        descriminator = rn.RvNeuralDescriminator(lyrsNeus)  # ([784,50,10])
-                
+    
+        
+           
+    # Training ***********************************************************
+    DoTrain = ri.Ask_YesNo("Do Training?", sTrain)    
+    if DoTrain:    
+        fnNetworkData = "{}_{}Lyr".format(fnNetworkData, len(discriminator.NeuralLayers))
+               
+        discriminator.DoPloatWeights = ri.Ask_YesNo("Plot Neurons Weights?", 'n')
+            
         
         # Ask nmtivation  ------------------_----------
         enumActivation = ri.Ask_Enum("Select Activation method.", 
              nm.EnumActivation,  nm.EnumActivation.afReLU )
-        for lyr in descriminator.NeuralLayers:
-            lyr.ClassActivation, lyr.ClassCost = \
-            nm.Get_ClassActivation(enumActivation)
+        discriminator.Set_EnumActivation(enumActivation)
         
-        descriminator.Motoring_TrainningProcess = rn.Debug
-    
-        descriminator.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
-        if descriminator.NetEnableDropOut:
+        discriminator.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
+        if discriminator.NetEnableDropOut:
             enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
             nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
             rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
-            descriminator.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
+            discriminator.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
         
-        monitoring = ri.Ask_YesNo("Watch training process?", "y")
-        descriminator.Motoring_TrainningProcess = monitoring
-             
         
         # Auto-Caculate proper hyper pameters ---
         DoEvaluate_ProperParams = ri.Ask_YesNo("Auto-Caculating proper hyper pameters?", "n")
         if DoEvaluate_ProperParams:
             loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_lmbda(
-                    descriminator, descriminator.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
+                    discriminator, discriminator.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
             loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_learnRate(
-                    descriminator, descriminator.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
+                    discriminator, discriminator.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
         else:      
             loop,stepNum,learnRate,lmbda = rf.Ask_Input_SGD(loop,stepNum,learnRate,lmbda)
         
         print( "Hyper pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
-    
-    
-    
-        randomState = np.random.RandomState(int(time.time()))
-    
-        # 利用取樣集合 mini_trainingData[]，逐一以每個小測試集，　更新 weights 和 biases 
-        TrueDigit_sets = [ lstTrain[k:k+stepNum] 
-            for k in range(0, len(lstTrain), stepNum)]
-        selId = randomState.randint(len(TrueDigit_sets))
         
-        """image[:,:] = [[ min(pixel + dVal, 255) 
-            for pixel in row] for row in image[:,:]]"""
-        FakeDigit_set = [ 
-            tuple([ randomState.randn(len(aTuple[0]),1) ,  
-                    rn.RvBaseNeuralNetwork.CreateLabelsY(10,randomState.randint(10)) ]) 
-            for aTuple in TrueDigit_sets[0] ]
-                
-        start = time.time()   
-        # Start Training-
-        descriminator.Train_Descriminator(TrueDigit_sets[selId], loop, stepNum, 
-            learnRate, lmbda,  blInitialWeiBias=True, labelY=1 )
+        sampleNum = min(20000, len(lstTrain))
+        MixDigit_set = Get_TrainData(lstTrain, sampleNum)
         
-        descriminator.Train_Descriminator(FakeDigit_set, loop, stepNum, 
-            learnRate, lmbda,  blInitialWeiBias=False, labelY=0 )
+        keepTraining = True
+        while (keepTraining):    
+            start = time.time()          
+            # Start Training-
+            discriminator.Train_Discriminator(\
+                MixDigit_set, loop, stepNum, learnRate, lmbda,  initialWeiBias )
+            initialWeiBias=False
+            
+            dT = time.time()-start           
+            
+            rf.Save_NetworkDataFile(discriminator, fnNetworkData, 
+                    loop,stepNum,learnRate,lmbda, dT, ".discriminator")
         
-        dT = time.time()-start
+            keepTraining = ri.Ask_YesNo("Keep Training?", "y")      
+            if keepTraining:
+               loop = ri.Ask_Input_Integer("loop: ", loop)                                        
+      
+    
+    
+    
+    #檢驗 True Fake Digit -------------------------------------
+    Discriminate_Digits(discriminator, MixDigit_set)
+
         
-        fnNetworkData1 = rf.Save_NetworkDataFile(descriminator, fnNetworkData, loop,stepNum,
-            learnRate,lmbda, dT, ".descriminator")
-    
-    # Prediction ------------------------------------------------
-    if (not os.path.isfile(fnNetworkData1)): 
-        fnNetworkData1= ".\\NetData\\{}_NetData.descriminator". \
-            format(rn.RvNeuralDescriminator.__name__)
-    
-    
-#    # Ask DoPredict----------------------------------------------------
-#    DoPredict=True
-##    if DoTraining: DoPredict = ri.Ask_YesNo("Predict digits?", "n")   
-##    else: DoPredict = True
-#
-#    if DoPredict:          
-#        rn.Debug_Plot = True #ri.Ask_YesNo("Plot Digits?", "n") 
-#    #    Predict_Digits(net, lstT)
-#        rf.Predict_Digits_FromNetworkFile(fnNetworkData1, lstT, rn.Debug_Plot)    
-#    
-    
-    
     
 #%% Test Section *********************************************************************
     
@@ -208,12 +333,12 @@ def Main():
 #rvLyr = RvNeuralLayer([30,10])
 #rvLyr1 = RvNeuralLayer(10, 20)
 
-#測試 RvNeuralDescriminator() overload Constructor ---------------    
+#測試 RvNeuralDiscriminator() overload Constructor ---------------    
 #lyrsNeus = [784,50,10]
-#rvNeuLyrs = RvNeuralDescriminator.LayersNeurons_To_RvNeuralLayers(lyrsNeus)
-#net = RvNeuralDescriminator(rvNeuLyrs)    
-#net = RvNeuralDescriminator.Class_Create_LayersNeurons(lyrsNeus)    
-#net = RvNeuralDescriminator(lyrsNeus)    
+#rvNeuLyrs = RvNeuralDiscriminator.LayersNeurons_To_RvNeuralLayers(lyrsNeus)
+#net = RvNeuralDiscriminator(rvNeuLyrs)    
+#net = RvNeuralDiscriminator.Class_Create_LayersNeurons(lyrsNeus)    
+#net = RvNeuralDiscriminator(lyrsNeus)    
     
     
     

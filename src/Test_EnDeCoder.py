@@ -99,24 +99,26 @@ fn1= ".RvNeuralEnDeCoder_Decoder.decoder"
 
 
 fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".decoder"])
-aId = 0 #ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
-fn1= fns[aId]
+if len(fns)>0:
+    aId = ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
+    fn1= fns[aId]
 
 fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".encoder"])
-aId = 0 #ri.Ask_SelectItem("Select Encoder file", shortFns, 0)    
-fn2= fns[aId]
+if len(fns)>0:
+    aId = ri.Ask_SelectItem("Select Encoder file", shortFns, aId)    
+    fn2= fns[aId]
 
 #addNoise = ri.Ask_YesNo("Add noise?", "n")
-noiseStrength = 0.8 #ri.Ask_Input_Float("Input Noise Strength.", 0.0)
+noiseStrength = ri.Ask_Input_Float("Input Noise Strength(0=No Noise).", 0.8)
 
 randomState = np.random.RandomState(int(time.time()))
 
-if (os.path.isfile(fn1)):            
+if (os.path.isfile(fn1) and os.path.isfile(fn2)):            
     
     decoder = rn.RvNeuralEnDeCoder(fn1)
     encoder = rn.RvNeuralEnDeCoder(fn2)
     
-    imgPath = "{}\\{}\\".format(decoder.VideoImagePath, "EncoderDecoder")   
+    imgPath = "{}\\{}\\".format(decoder.Get_VideoOutputPath(), "EncoderDecoder")   
     rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
     rfi.Delete_Files(imgPath, [".jpg",".png"])
         
@@ -125,6 +127,7 @@ if (os.path.isfile(fn1)):
     
     if (None!=decoder) and (None!=encoder):            
       
+        #noiseStrength = ri.Ask_Input_Float("Input Noise Strength(0=No Noise).", noiseStrength)
         rf.Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum, imgPath, noiseStrength)
 
         aviFn = "{}{}".format(imgPath, "EncoderDecoder.avi")

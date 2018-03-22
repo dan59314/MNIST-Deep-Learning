@@ -99,7 +99,7 @@ plot_figures(figures, 2, 4)
 """
 
 
-def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10 ):
+def Plot_Images(images, nrows = 1, ncols=1, sTitles=[""], saveFn="", figW_Inch=10 ):
     """Plot a dictionary of figures.
 
     Parameters
@@ -136,6 +136,9 @@ def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10 )
         clear=False, **kwargs)
     """
     
+    nTitle = len(sTitles)
+    midCol = int(ncols/2)+1
+    
     figH_Inch = figW_Inch * nrows/ncols
     
     idx = 0
@@ -144,11 +147,17 @@ def Plot_Images(images, nrows = 1, ncols=1, sTitle="", saveFn="", figW_Inch=10 )
     for i in range(1, ncols*nrows +1):
         fig.add_subplot(nrows,ncols, i)
         plt.axis('off')
-        if (idx>=nImg):
-          plt.imshow([[]])
-        else:
-          plt.imshow(images[idx], cmap=plt.gray())
-        if (""!=sTitle) and (i==1): plt.title(sTitle)
+        
+        if (idx>=nImg): plt.imshow([[]])
+        else: plt.imshow(images[idx], cmap=plt.gray())
+        
+        if (nTitle==0): 
+            plt.title(" ")
+        elif (nTitle==1): 
+            if (i==midCol): plt.title(sTitles[0])
+        else: 
+            if (i<nTitle+1): plt.title(sTitles[i-1])
+                
         idx+=1
         
     #img.set_cmap('hot')

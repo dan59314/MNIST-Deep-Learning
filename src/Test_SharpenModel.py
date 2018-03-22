@@ -62,7 +62,6 @@ import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
 import RvFileIO as rfi
 import RvMediaUtility as ru
-import RvFileIO as rfi
 
 from RvNeuNetworkMethods import EnumDropOutMethod as drpOut
 
@@ -121,12 +120,13 @@ for img in digitImages:
     
     
 # Prediction ------------------------------------------------
-fn1= "RvNeuralEnDeCoder_Sharpness_DontDelete.endecoder"
+fn1= ".\\NetData\\RvNeuralEnDeCoder_Sharpness_DontDelete.endecoder"
 
 if not rfi.FileExists(fn1):
     fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".endecoder"])
-    aId = min(1, len(fns)-1) #0 #ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
-    fn1= fns[aId]
+    if len(fns)>0:
+        aId = min(1, len(fns)-1) #0 #ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
+        fn1= fns[aId]
 
 
 #addNoise = ri.Ask_YesNo("Add noise?", "n")
@@ -138,20 +138,19 @@ if (os.path.isfile(fn1)):
     
     sharpenModel = rn.RvNeuralEnDeCoder(fn1)
     
-    imgPath = "{}\\{}\\".format( sharpenModel.VideoImagePath, "SharpenModel")   
-    rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
-    rfi.Delete_Files(imgPath, [".jpg",".png"])
-        
-    sampleNum=20
-    durationSec = min(1.0, 10/sampleNum)
+    if (None!=sharpenModel):     
+        vdoPath = "{}\\{}\\".format(sharpenModel.LogPath , "SharpenModel")
+        sharpenModel.Set_VideoOutputPath(vdoPath) 
+        rfi.Delete_Files( vdoPath, [".jpg",".png"])
+            
+        sampleNum=20
+        durationSec = min(1.0, 10/sampleNum)
     
-    if (None!=sharpenModel):        
-      
-        rf.Test_EnDecoder(sharpenModel, lstTest, sampleNum, imgPath, noiseStrength)
+        rf.Test_EnDecoder(sharpenModel, lstTest, sampleNum, vdoPath, noiseStrength)
 
-        aviFn = "{}{}".format(imgPath, "SharpenModel.avi")
+        aviFn = "{}{}".format(vdoPath, "SharpenModel.avi")
         
-        if ru.ImageFilesToAvi(imgPath, aviFn, durationSec ):
+        if ru.ImageFilesToAvi(vdoPath, aviFn, durationSec ):
             rfi.OpenFile(aviFn)
 
 

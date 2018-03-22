@@ -102,12 +102,14 @@ AddNoise = False
 # Prediction ------------------------------------------------
 
 fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".decoder"])
-aId = 0 #ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
-fn1= fns[aId]
+if len(fns)>0:
+    aId = ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
+    fn1= fns[aId]
 
 fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".encoder"])
-aId = 0 #ri.Ask_SelectItem("Select Encoder file", shortFns, 0)    
-fn2= fns[aId]
+if len(fns)>0:
+    aId = ri.Ask_SelectItem("Select Encoder file", shortFns, aId)    
+    fn2= fns[aId]
 
 #addNoise = ri.Ask_YesNo("Add noise?", "n")
 noiseStrength = 0.8 #ri.Ask_Input_Float("Input Noise Strength.", 0.0)
@@ -122,39 +124,45 @@ if (os.path.isfile(fn1)):
     inputNum = decoder.Get_InputNum()
     outputNum = decoder.Get_OutputNum()
     
-    imgPath = "{}\\{}\\".format(decoder.VideoImagePath, "EncoderDecoder")   
+    # 設定輸出影片參數 --------------------------------
+    imgPath = "{}\\{}\\".format(decoder.Get_VideoOutputPath(), "Decoder")   
     rfi.ForceDir(imgPath) #if not os.path.isdir(imgPath): os.mkdir(imgPath)
-    rfi.Delete_Files(imgPath, [".jpg",".png"])
-        
-    sampleNum=20
-    durationSec = min(0.2, 10/sampleNum)
+    rfi.Delete_Files(imgPath, [".jpg",".png"])    
+    pathExists = rfi.PathExists(imgPath)
+    sampleLoop=20
     
-    if (None!=decoder): #and (None!=encoder):   
-               
-        pxlW = int(np.sqrt(outputNum))         
-      
-        #rf.Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum, imgPath, noiseStrength)
-          
+    # 設定繪圖參數 ----------------------------------
+    digitFigs = [ [] for i in range(10)]
+    nCol = 5 #int(np.sqrt(len(digitFigs)))
+    nRow = 2 #int(len(digitFigs)/nCol)+1
+    pxls = outputNum
+    pxlW = int(np.sqrt(pxls))
+    pxls = pxlW*pxlW
+    dpi = 72
+    zoom = 8   # 28 pxl * zoom
+    pltInchW =  pxlW/dpi*nCol * zoom
         
-        for j in range(100):  # 多做幾次，效果不會比較好
-            encode = randomState.randn(inputNum,1)   
-            encode = np.maximum(0.2, np.minimum(0.8, encode))
-                          
-            #output = decoder.Plot_Output(encode) #(784x1)    
-            output = decoder.Get_OutputValues(encode)    
-            
-            print("code -> Output")              
-            if rfi.PathExists(imgPath):
-                imgFn = "{}vdoImg_{}.png".format(imgPath, j)
-            else:
-                imgFn = ""               
-            
-            pltFn.Plot_Images(np.array([output.transpose().reshape(pxlW,pxlW)*255]),
-                1,1, "Test EnDeCoder", imgFn, 6)
-            oneInput = output
     
-        aviFn = "{}{}".format(imgPath, "EncoderDecoder.avi")
+    
+    if (None!=decoder): #and (None!=encoder):  
         
+        for i in range(sampleLoop):
+            digitId = 0
+            for j in range(10): 
+                encode = randomState.randn(inputNum,1)   
+                encode = np.maximum(0.2, np.minimum(0.8, encode))                
+                output = decoder.Get_OutputValues(encode)                 
+                digitFigs[j] = output.transpose().reshape(pxlW,pxlW)*255
+            
+            print("({}): code -> Output".format(i))    
+            if pathExists: imgFn = "{}vdoImg_{}.png".format(imgPath, i)
+            else: imgFn = ""         
+            pltFn.Plot_Images(np.array(digitFigs),
+                nRow,nCol, ["Test DeCoder Fake Image"], imgFn, pltInchW)            
+        
+        
+        aviFn = "{}{}".format(imgPath, "Decoder.avi")     
+        durationSec = 0.5 #min(2.0, 10/sampleLoop)
         if ru.ImageFilesToAvi(imgPath, aviFn, durationSec ):
             rfi.OpenFile(aviFn)
 

@@ -98,6 +98,7 @@ class EnumActivation(Enum):
     afSigmoid = 1
     afReLU = 2
     afTanh = 3
+    afSeLU = 4
 
 
 class Activation_Sigmoid(object):        
@@ -130,6 +131,29 @@ class Activation_ReLU(object):
         return 1.0 * (a>0)
         # return 1 if (a>0) else a  # leaky ReLU
     
+
+class Activation_SeLU(object):     
+    #__name__ = "SeLU"
+    @staticmethod
+    def activation(z): # = SeLU(z)
+        alpha = 1.673263242354377
+        lmbda = 1.050700987355480
+        
+        for vz in z:                
+            if (vz>0): 
+              vz = vz 
+            else:
+              vz = alpha*np.exp(vz)-alpha
+        return lmbda*z  
+         
+    
+    
+    @staticmethod
+    def derivation(z): # = 1. * (SeLU(z) > 0)
+        #return 1. * (SeLU(z) > 0)
+        a = Activation_SeLU.activation(z)
+        return 1.0 * (a>0)
+        # return 1 if (a>0) else a  # leaky SeLU
     
 class Activation_Tanh(object): 
     #__name__ = "Tanh"
@@ -271,6 +295,9 @@ def Get_ClassActivation(enumActivation):
         return Activation_ReLU, Get_ClassCost(EnumCost.cfQuadratic)
     elif enumActivation==EnumActivation.afTanh:
         return Activation_Tanh, Get_ClassCost(EnumCost.cfQuadratic)
+    elif enumActivation==EnumActivation.afSeLU:
+        # ReLU沒有限制Z 在 0~1 之間，所以不能使用 CrossEntropy 加大
+        return Activation_SeLU, Get_ClassCost(EnumCost.cfQuadratic)
     else:
         print("{} not found.".format(enumActivation))
         # ReLU沒有限制Z 在 0~1 之間，所以不能使用 CrossEntropy 加大

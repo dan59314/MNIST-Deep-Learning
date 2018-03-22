@@ -86,6 +86,19 @@ def PreProcessBlur(inputX):
     return nInput.reshape(pxls,1)
  
        
+def Get_TrainData(lstTrain, sampleNum):    
+    randomState = np.random.RandomState(int(time.time()))    
+    print("\nPreparing ({}) label Images....\n".format(sampleNum)  )
+    print("")
+    sampleEndId = len(lstTrain)-sampleNum
+    sId = randomState.randint(sampleEndId)
+    lstNew = []
+    for aTuple in lstTrain[sId:sId+sampleNum]:
+        # [模糊, 銳利]
+        lstNew.append(tuple([ PreProcessBlur(aTuple[0]), aTuple[0] ]) )
+        
+    return lstNew
+
 
 
 #%%  
@@ -113,7 +126,7 @@ def Main():
     path = "..\\TmpLogs\\"
     rfi.ForceDir(path)          
     
-    fnNetworkData = "{}{}_NetData".format(path,rn.RvNeuralEnDeCoder.__name__)   
+    fnNetworkData = "{}{}_EDC_Sharpen".format(path,rn.RvNeuralEnDeCoder.__name__)   
     
     
     #Hyper pameters -------------------------------------------    
@@ -125,6 +138,9 @@ def Main():
     
     endecoder = None
     
+    lstNew = Get_TrainData(lstTrain, 50)
+    
+    sTrain = "y"
     # Training ***********************************************************
     # Ask DoTraining-
     LoadAndTrain = ri.Ask_YesNo("Load exist model and continue training?", "n")    
@@ -132,11 +148,12 @@ def Main():
     if LoadAndTrain:       
         digitIdOnly = -1 
         fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".endecoder"])
-        aId = ri.Ask_SelectItem("Select Decoder file", shortFns, 0)    
+        aId = ri.Ask_SelectItem("Select EnDecoder file", shortFns, 0)    
         fn1= fns[aId]
-        endecoder = rn.RvNeuralEnDeCoder(fn1)       
-        
+        endecoder = rn.RvNeuralEnDeCoder(fn1)   
         initialWeights = False
+        sTrain = "n"
+        encoder, decoder = endecoder.Get_Encoder_Decoder()
         
     else:             
         """
@@ -169,87 +186,84 @@ def Main():
         #net = RvNeuralEnDeCoder( 
         #   RvNeuralEnDeCoder.LayersNeurons_To_RvNeuralLayers(lyrsNeus))
         #net = RvNeuralEnDeCoder.Class_Create_LayersNeurons(lyrsNeus)
-        endecoder = rn.RvNeuralEnDeCoder(lyrsNeus)  # ([784,50,10])
-        
+        endecoder = rn.RvNeuralEnDeCoder(lyrsNeus)  # ([784,50,10])        
         initialWeights = True
         
     
     
-    randomState = np.random.RandomState(int(time.time()))
     
     
     
-    # Ask nmtivation  ------------------_----------
-    enumActivation = ri.Ask_Enum("Select Activation method.", 
-         nm.EnumActivation,  nm.EnumActivation.afSigmoid)
-    for lyr in endecoder.NeuralLayers:
-        lyr.Set_EnumActivation(enumActivation)
+    # Training ***********************************************************
+    DoTrain = ri.Ask_YesNo("Do Training?", sTrain)    
+    if DoTrain:        
+        fnNetworkData = "{}_{}Lyr".format(fnNetworkData, len(endecoder.NeuralLayers))
+               
+        endecoder.DoPloatWeights = ri.Ask_YesNo("Plot Neurons Weights?", 'n')
+            
+        
+        # Ask nmtivation  ------------------_----------
+        enumActivation = ri.Ask_Enum("Select Activation method.", 
+             nm.EnumActivation,  nm.EnumActivation.afSigmoid)
+        for lyr in endecoder.NeuralLayers:
+            lyr.Set_EnumActivation(enumActivation)
+        
+        endecoder.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
+        if endecoder.NetEnableDropOut:
+            enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
+            nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
+            rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
+            endecoder.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
+        
+        
+        # Auto-Caculate proper hyper pameters ---
+        DoEvaluate_ProperParams = ri.Ask_YesNo("Auto-Caculating proper hyper pameters?", "n")
+        if DoEvaluate_ProperParams:
+            loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_lmbda(
+                    endecoder, endecoder.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
+            loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_learnRate(
+                    endecoder, endecoder.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
+        else:      
+            loop,stepNum,learnRate,lmbda = rf.Ask_Input_SGD(loop,stepNum,learnRate,lmbda)
+        
+        print( "Hyper pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
     
-    endecoder.Motoring_TrainningProcess = rn.Debug
-
-    endecoder.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
-    if endecoder.NetEnableDropOut:
-        enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
-        nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
-        rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
-        endecoder.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
-    
-    monitoring = ri.Ask_YesNo("Watch training process?", "y")
-    endecoder.Motoring_TrainningProcess = monitoring
-         
-    
-    # Auto-Caculate proper hyper pameters ---
-    DoEvaluate_ProperParams = ri.Ask_YesNo("Auto-Caculating proper hyper pameters?", "n")
-    if DoEvaluate_ProperParams:
-        loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_lmbda(
-                net, endecoder.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
-        loop,stepNum,learnRate,lmbda = rf.Evaluate_BestParam_learnRate(
-                net, endecoder.Train, lstTrain[:1000], lstV[:500], loop,stepNum,learnRate,lmbda)
-    else:      
-        loop,stepNum,learnRate,lmbda = rf.Ask_Input_SGD(loop,stepNum,learnRate,lmbda)
-    
-    print( "Hyper pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
-
-
-    start = time.time()   
-    # Start Training-
-    if (None!=endecoder):
-        sampleNum = 5000
-        print( "\nPrepare ({}) label Images....\n".format(sampleNum)  )
-        sampleEndId = len(lstTrain)-sampleNum
-        sId = randomState.randint(sampleEndId)
-        lstNew = []
-        for aTuple in lstTrain[sId:sId+sampleNum]:
-            # [模糊, 銳利]
-            lstNew.append(tuple([ PreProcessBlur(aTuple[0]), aTuple[0] ]) )
+            
+        sampleNum = 5000        
+        lstNew = Get_TrainData(lstTrain, sampleNum)
+        
             
         keepTraining = True
         while (keepTraining):
+          start = time.time()   
+          
           encoder, decoder = endecoder.Build_Encoder_Decoder_AssignOutputY( \
             lstNew, loop, stepNum, learnRate, lmbda, initialWeights, digitIdOnly)
+          initialWeights = False
+          
+          dT = time.time()-start   
+            
+          rf.Save_NetworkDataFile(endecoder, fnNetworkData, 
+             loop,stepNum,learnRate,lmbda, dT, ".endecoder")        
+          fn1 = rf.Save_NetworkDataFile(encoder, 
+             "{}_Encoder".format(fnNetworkData), 
+                    loop,stepNum,learnRate,lmbda, dT, ".encoder")
+          fn2 = rf.Save_NetworkDataFile(decoder, 
+             "{}_Decoder".format(fnNetworkData), 
+             loop,stepNum,learnRate,lmbda, dT, ".decoder")
+            
           keepTraining = ri.Ask_YesNo("Keep Training?", "y")
+          if keepTraining:
+             loop = ri.Ask_Input_Integer("loop: ", loop)
     
-    dT = time.time()-start
-    
-    
-    rf.Save_NetworkDataFile(endecoder, fnNetworkData, 
-            loop,stepNum,learnRate,lmbda, dT, ".endecoder")
-
-    fn1 = rf.Save_NetworkDataFile(encoder, 
-            "{}_Encoder".format(fnNetworkData), 
-            loop,stepNum,learnRate,lmbda, dT, ".encoder")
-    fn2 = rf.Save_NetworkDataFile(decoder, 
-            "{}_Decoder".format(fnNetworkData), 
-            loop,stepNum,learnRate,lmbda, dT, ".decoder")
-
-    
-    decoder = rn.RvNeuralEnDeCoder(fn2)
-    encoder = rn.RvNeuralEnDeCoder(fn1)
+        decoder = rn.RvNeuralEnDeCoder(fn2)
+        encoder = rn.RvNeuralEnDeCoder(fn1)    
     
     
-    noiseStrength = ri.Ask_Input_Float("Input Noise Strength.", 0.7)
-    rf.Test_Encoder_Decoder(encoder, decoder, lstT,10, 
-        "", noiseStrength)
+    
+    
+    noiseStrength = ri.Ask_Input_Float("Input Noise Strength(0=NoNoise).", 0.7)
+    rf.Test_Encoder_Decoder(encoder, decoder, lstNew, 10, "", noiseStrength)
     
     
 #%% Test Section *********************************************************************

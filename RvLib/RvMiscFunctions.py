@@ -225,7 +225,7 @@ def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
                   test_cost, n_train, n_test,training_accuracy,test_accuracy,
                   blShow=True, blSave=True, frId=None, toId=None):      
     
-    if (None==training_cost):return
+    if (None==training_cost) or (len(training_cost)<=0):return
     
     cMinLoopToPlotDot = 30
 
@@ -237,7 +237,7 @@ def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
     loop = len(loops)
     
     # 劃出圖表 --------------------
-    if (None!=test_cost):
+    if (None!=test_cost) and (len(test_cost)>0):
         if loop<cMinLoopToPlotDot:
             plt.plot(loops[frId:toId], training_cost[frId:toId],"ro-", test_cost[frId:toId],"bo-")
         else:
@@ -252,7 +252,8 @@ def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
         font['color'] = 'red'
         plt.text(loops[-1],training_cost[-1], r'$training$', **font)
         font['color'] = 'blue'
-        plt.text(loops[-1],test_cost[-1], r'$test$', **font)
+        if (None!=test_cost) and (len(test_cost)>0):
+          plt.text(loops[-1],test_cost[-1], r'$test$', **font)
         if True==blSave: 
             plt.savefig("{}_Cost.png".format(fn), format = "png")
         if True==blShow: 
@@ -262,7 +263,8 @@ def DrawFigures(plt, fn, font, learnRate, lmbda, loops, training_cost,
                        format(learnRate,lmbda),
                        "loop", "accuracy")
         accur_train = np.divide(training_accuracy,n_train)
-        accur_test = np.divide(test_accuracy,n_test)
+        if (None!=test_accuracy) and (len(test_accuracy)>0):
+          accur_test = np.divide(test_accuracy,n_test)
         # 劃出圖表 --------------------
         if loop<cMinLoopToPlotDot:
             plt.plot(loops[frId:toId], accur_train[frId:toId], "ro-", accur_test[frId:toId], "bo-")
@@ -338,7 +340,8 @@ def Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT, f
         if net.NetEnableDropOut else ""        
     fnSave = "{}{}{}_{:.2f}{}".format(fnNetworkData, 
         sConvLyr, sDropOut, net.BestAccuracyRatio,fileExt) 
-    net.Save_NetworkData(fnSave)    
+    net.Save_NetworkData(fnSave)   
+    print("Net file saved: \"{}\"".format(fnSave))
     
 
     lyrsWeis = net.Get_LayersNeuronsWeightsNum()
@@ -354,7 +357,7 @@ def Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT, f
          "WeightsMultiples: {}\n".format(weiMultiple ) + \
          "Hyper Pameters: Loop({}), stepNum({}), lr({:.4f}), lmbda({:.4f})\n".format(
             loop,stepNum,learnRate,lmbda)  + \
-         "Accuracy : Worst({}), Best({})\n".format(net.WorstAccuracyRatio, net.BestAccuracyRatio)  + \
+         "Accuracy : Worst({:.4f}), Best({:.4f})\n".format(net.WorstAccuracyRatio, net.BestAccuracyRatio)  + \
          "Elapsed Time(Seconds): {} sec.\n".format( timedelta(seconds=int(dT)) ) 
     print(s1)
     
@@ -370,15 +373,38 @@ def Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,learnRate,lmbda, dT, f
 
 
 
+def Initial_PlotParams(pxls,nRow,nCol):    
+    # 設定繪圖參數 ----------------------------------
+#    nCol = 5 #int(np.sqrt(len(digitFigs)))
+#    nRow = 2 #int(len(digitFigs)/nCol)+1
+#    pxls = outputNum
+    pxlW = int(np.sqrt(pxls))
+    #pxls = pxlW*pxlW
+    dpi = 72
+    zoom = 6   # 28 pxl * zoom
+    pltInchW =  pxlW/dpi*nCol * zoom
+    digitFigs = [ np.full((pxlW,pxlW),0) for i in range(nRow*nCol)]
+    
+    return digitFigs, pxlW, pltInchW
 
-sResult = ["錯誤", "正確"]
+
+sResult = ["X", "O"]
 
 def Predict_Digits(net, lstT, plotDigit=True, onlyDigit=-1):
+    
+    nRow, nCol = 2, 5
+    digitNum = nRow*nCol
+    digitFigs, pxlW, pltInchW = Initial_PlotParams(len(lstT[0][0]),nRow,nCol)
+    digitTitles = ["" for a in digitFigs]
+    digitId = 0
+    
+    
     # 隨機測試某筆數字 ----------------------------------------------    
     start = time.time() 
     
     sampleNum=10000 # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
     plotNum = 5
+    iPlot = 0
     plotMod = int(sampleNum/plotNum) + 1
     correctNum=0    
     failNum = 0
@@ -389,17 +415,31 @@ def Predict_Digits(net, lstT, plotDigit=True, onlyDigit=-1):
         label, result, outputY = net.Predict_Digit(lstT[aId], False)    
         if label==result: correctNum+=1
         else: 
-            doPlot = (failNum<plotNum) 
+            doPlot = iPlot<plotNum #(failNum<10) 
             failNum+=1
         if doPlot and plotDigit:
-            Plot_Digit(lstT[aId], result, label)
-            print("({}): Label={}, Predict:{}({:.5f} ) -> {} ".
-                 format(i, label,result, outputY, sResult[int(label==result)]))   
-    
+#            Plot_Digit(lstT[aId], result, label)
+#            print("({}): Label={}, Predict={}  ( {:.5f} ) -> {} ".
+#                 format(i, label,result, outputY, sResult[int(label==result)]))   
+            s1 ="{}={},({:.3f})->{}".\
+                 format(label, result, 
+                        outputY,sResult[int(label==result)] )
+            digitId = digitId % digitNum
+            digitFigs[ digitId ] = np.array(lstT[aId][0]).transpose().reshape(pxlW,pxlW)*255
+            digitTitles[ digitId ] = s1            
+            digitId+=1
+            
+            if (digitId==digitNum):
+              pltFn.Plot_Images(np.array(digitFigs),
+                  nRow,nCol, digitTitles, "", pltInchW)  
+              iPlot+=1
+              digitId = 0
+              
+              
     dt = time.time()-start
     
     accurRatio = correctNum/sampleNum
-    print("\nResult: Accuracy({:.3f}),  {}/{}(Correct/Total)".
+    print("\nAccuracy({:.3f}),  {}/{}(Correct/Total)".
           format(accurRatio, correctNum, sampleNum))    
     print("Elapsed(seconds)) : {:.3f} sec.\n".format(dt))    
     return accurRatio,dt
@@ -414,6 +454,22 @@ def Predict_Digits_FromNetworkFile(fn, lstT, plotDigit=True, onlyDigit=-1):
 
         
 
+def PreProcessBlur(inputX):
+    pxls = len(inputX)
+    pxlW = int(np.sqrt(pxls))
+    pxls = pxlW*pxlW
+    nInput = np.array(inputX).reshape(pxlW,pxlW)
+    for iy in range(1,pxlW-1):
+        for ix in range(1, pxlW-1):
+            tVal = 0.0
+            for ay in range(iy-1,iy+2):
+                for ax in range(ix-1, ix+2):
+                    tVal+=nInput[ay][ax]
+            avg = tVal/9
+            nInput[iy][ix] = avg
+    return nInput.reshape(pxls,1)
+
+
 
 def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
         noiseStrength=0.0):
@@ -425,7 +481,15 @@ def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
     # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
     for i in range(0, sampleNum):
         aId = np.random.randint(0,len(lstT))
-        digitId = lstT[aId][1]
+        
+        digitId = 0
+        if  type(lstT[aId][1])==np.array:
+          if len(lstT[aId][1])==10:
+              digitId = np.argmax(lstT[aId][1])
+          else:
+              digitId = -1
+        elif type(lstT[aId][1])==np.int64:
+            digitId = lstT[aId][1] 
         
         oneInput =lstT[aId][0]
         #rf.Plot_Digit([oneInput.transpose(), lstT[aId][1] ] )  #(1x784)        
@@ -440,23 +504,19 @@ def Test_Encoder_Decoder(encoder, decoder, lstT, sampleNum=10, saveImgPath="",
             #output = decoder.Plot_Output(encode) #(784x1)    
             output = decoder.Get_OutputValues(encode)    
             
-            print("Input({}) -> Output : Accuracy={:.3f}".
-                  format(digitId, decoder.Get_Accuracy_EnDeCoder(oneInput, output)))              
+#            print("Input({}) -> Output : Accuracy={:.3f}".
+#                  format(digitId, decoder.Get_Accuracy_EnDeCoder(oneInput, output)))              
             if rfi.PathExists(saveImgPath):
                 imgFn = "{}vdoImg_{}_{}.png".format(saveImgPath, i,j)
             else:
                 imgFn = ""               
             
             pltFn.Plot_Images(np.array([oneInput.transpose().reshape(pxlW,pxlW)*255,
-                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", imgFn)
+                output.transpose().reshape(pxlW,pxlW)*255]),1,2, 
+                ["({}) Input".format(digitId), "Output"], imgFn) 
+            print("")
             oneInput = output
             
-            
-#        print("Input({}) -> Output : Accuracy={:.3f}".
-#                  format(digitId, decoder.Get_Accuracy_EnDeCoder(lstT[aId][0], output)))   
-#        pltFn.Plot_Images(np.array([lstT[aId][0].transpose().reshape(pxlW,pxlW)*255,
-#                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", "")
-    
         
     #dt = time.time()-start                     
     
@@ -473,7 +533,15 @@ def Test_EnDecoder(endecoder, lstT, sampleNum=10, saveImgPath="",
     # 不含繪圖，辨識 10000張，費時 1.3 秒，平均每張 0.00013秒
     for i in range(0, sampleNum):
         aId = np.random.randint(0,len(lstT))
-        digitId = lstT[aId][1]
+        
+        digitId = 0
+        if  type(lstT[aId][1])==np.ndarray:
+          if len(lstT[aId][1])==10:
+              digitId = np.argmax(lstT[aId][1])
+          else:
+              digitId = -1
+        elif type(lstT[aId][1])==np.int64:
+            digitId = lstT[aId][1] 
         
         oneInput =lstT[aId][0]
         #rf.Plot_Digit([oneInput.transpose(), lstT[aId][1] ] )  #(1x784)        
@@ -483,26 +551,20 @@ def Test_EnDecoder(endecoder, lstT, sampleNum=10, saveImgPath="",
             
         
         for j in range(1):  # 多做幾次，效果不會比較好
-            output = endecoder.Get_OutputValues(oneInput)    
-            
-            print("Input({}) -> Output : Accuracy={:.3f}".
-                  format(digitId, endecoder.Get_Accuracy_EnDeCoder(oneInput, output)))              
+            output = endecoder.Get_OutputValues(oneInput)   
+#            print("Input({}) -> Output : Accuracy={:.3f}".
+#                  format(digitId, endecoder.Get_Accuracy_EnDeCoder(oneInput, output)))              
             if rfi.PathExists(saveImgPath):
                 imgFn = "{}vdoImg_{}_{}.png".format(saveImgPath, i,j)
             else:
                 imgFn = ""               
             
             pltFn.Plot_Images(np.array([oneInput.transpose().reshape(pxlW,pxlW)*255,
-                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", imgFn)
+                output.transpose().reshape(pxlW,pxlW)*255]),1,2,
+                ["({})Input".format(digitId), "Output"], imgFn) 
+            print("")
             oneInput = output
             
-            
-#        print("Input({}) -> Output : Accuracy={:.3f}".
-#                  format(digitId, decoder.Get_Accuracy_EnDeCoder(lstT[aId][0], output)))   
-#        pltFn.Plot_Images(np.array([lstT[aId][0].transpose().reshape(pxlW,pxlW)*255,
-#                    output.transpose().reshape(pxlW,pxlW)*255]),1,2, "Test EnDeCoder", "")
-    
-        
     #dt = time.time()-start          
                 
 #%% Initial Functions

@@ -117,9 +117,13 @@ def ExtractFilePath(absFn):
     return os.path.split(absFn)[0]
         
     
-def ExtractFileName(absFn):
-    #return str(absFn).split('\\')[-1:][0]
-    return os.path.split(absFn)[1]
+def ExtractFileName(absFn, includePath=True): 
+    if includePath:
+        return str(os.path.abspath(absFn)).split('.')[0]
+    else:  
+        baseFn = os.path.split(absFn)[1]
+        nFn = str(baseFn).split('.')[0]
+        return nFn
 
 
 def ExtractFileExt(absFn):

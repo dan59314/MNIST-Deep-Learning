@@ -85,7 +85,7 @@ def Main():
     
     
     # Load net file and continune training--
-    fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".nnf"])
+    fns, fn0s =  rfi.Get_FilesInFolder(".\\NetData\\", [".cnn",".dnn"])
     aId = ri.Ask_SelectItem("Select network file", fn0s, 0)    
     fn1= fns[aId]
 #    
@@ -96,12 +96,12 @@ def Main():
     
     if (os.path.isfile(fn1)): 
         net = rn.RvNeuralNetwork(fn1)     
-        enumDropOut = net.NetEnumDropOut.value,
-        dropOutRatio = net.NetDropOutRatio,
-        #'BestAccuracyRatio' : net.BestAccuracyRatio,
-        loop = net.Train_Loop,
-        learnRate = net.Train_LearnRate,
-        lmbda = net.Train_Lmbda,
+        enumDropOut = net.NetEnumDropOut.value
+        dropOutRatio = net.NetDropOutRatio
+        #'BestAccuracyRatio' : net.BestAccuracyRatio
+        #loop = net.Train_Loop
+        learnRate = net.Train_LearnRate
+        lmbda = net.Train_Lmbda
     else: net = None
       
     
@@ -117,19 +117,14 @@ def Main():
         lstV = list(lstV)
         lstT = list(lstT)
             
-        
-            
-    
-        enableDropOut = ri.Ask_YesNo("Excute DropOut?", "n")
+        sYN = "y" if net.NetEnableDropOut else "n"
+        enableDropOut = ri.Ask_YesNo("Excute DropOut?", sYN)
         if enableDropOut:
             enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
             nm.EnumDropOutMethod,  drpOut.eoSmallActivation )
             rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", dropOutRatio)
         
-        monitoring = ri.Ask_YesNo("Watch the training process?", "y")
         
-        
-        net.Motoring_TrainningProcess = monitoring
         if enableDropOut:        
             net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)     
         
@@ -140,8 +135,7 @@ def Main():
         print( "Hyper Pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
         
         
-        DoKeepTraining = (net!=None) 
-        
+        DoKeepTraining = True        
         while (DoKeepTraining):
             start = time.time()   
             # Start Training
@@ -154,7 +148,7 @@ def Main():
                 
             DoKeepTraining = ri.Ask_YesNo("Continue training?", "y")
           
-
+     
 
 #%% Main Section ***************************************************************    
 Main()

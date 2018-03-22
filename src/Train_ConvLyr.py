@@ -115,7 +115,7 @@ def Main():
     if not os.path.isdir(path):
         os.mkdir(path)           
     
-    fnNetworkData = "{}{}_NetData".format(path,rn.RvNeuralNetwork.__name__)   
+    fnNetworkData = "{}{}_CNN".format(path,rn.RvNeuralNetwork.__name__)   
     fnSaved = ""
     
     
@@ -126,10 +126,20 @@ def Main():
     lmbda = 5.0     #add lmbda(Regularization) to solve overfitting 
     
     
+    sTrain = "y"
     # Training ***********************************************************
     # Ask DoTraining-
-    DoTraining = ri.Ask_YesNo("Execute Training?", "y")
-    if DoTraining:             
+    LoadAndTrain = ri.Ask_YesNo("Load exist model and continue training?", "n")    
+    
+    if LoadAndTrain:    
+        fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".cnn"])
+        aId = ri.Ask_SelectItem("Select CNN Network file", shortFns, 0)    
+        fn1= fns[aId]
+        net = rn.RvNeuralNetwork(fn1) 
+        sTrain = "n"
+        initialWeiBias = False
+        
+    else:            
         """
         [784,50,10], 
             loop=10, 0.9695
@@ -171,7 +181,13 @@ def Main():
 #        lyrObjs.append( rn.RvNeuralLayer([lyrObjs[-1].Get_NeuronsNum(),10]) )
             
         net = rn.RvNeuralNetwork(lyrObjs)
+        initialWeiBias = True
         
+        
+    # Training ***********************************************************
+    DoTrain = ri.Ask_YesNo("Do Training?", sTrain)    
+    if DoTrain:        
+        fnNetworkData = "{}_{}Lyr".format(fnNetworkData, len(net.NeuralLayers))
         
         # Ask nmtivation  ------------------_----------
         enumActivation = ri.Ask_Enum("Select Activation method.", 
@@ -180,8 +196,6 @@ def Main():
             lyr.ClassActivation, lyr.ClassCost = \
             nm.Get_ClassActivation(enumActivation)
         
-        net.Motoring_TrainningProcess = rn.Debug
-    
         net.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
         if net.NetEnableDropOut:
             enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
@@ -189,9 +203,6 @@ def Main():
             rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
             net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
         
-        monitoring = ri.Ask_YesNo("Watch training process?", "y")
-        net.Motoring_TrainningProcess = monitoring
-             
         
         # Caculate proper hyper pameters ---
         DoEvaluate_ProperParams = ri.Ask_YesNo("Auto-caculating proper hyper pameters?", "n")
@@ -206,17 +217,24 @@ def Main():
         print( "Hyper pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
     
     
-        start = time.time()   
-        # 開始網路訓練-
-        net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda )
+        # Start Training-
+        initialWeights = True
+        keepTraining = True
+        while (keepTraining):
+            start = time.time()   
+            net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda, initialWeights )
+            initialWeights = False
         
-        dT = time.time()-start
-        
-        fnSaved = rf.Save_NetworkDataFile(net, fnNetworkData, 
-                loop,stepNum,learnRate,lmbda, dT, ".nnf")
-       
-        print("Filter Share Weights = {}\n".format(rn.gFilterShareWeights) )
+            dT = time.time()-start
+            
+            fnSaved = rf.Save_NetworkDataFile(net, fnNetworkData, 
+                loop,stepNum,learnRate,lmbda, dT, ".cnn")
+            
+            keepTraining = ri.Ask_YesNo("Keep Training?", "y")
     
+   
+    print("Filter Share Weights = {}\n".format(rn.gFilterShareWeights) )
+
     
     # Ask DoPredict----------------------------------------------------
     DoPredict=True
@@ -224,7 +242,7 @@ def Main():
         if (os.path.isfile(fnSaved)): 
             fn1 = fnSaved
         else:
-            fn1= ".\\NetData\\{}_NetData_DontDelete.nnf".format(rn.RvNeuralNetwork.__name__)
+            fn1= ".\\NetData\\{}_CNN.cnn".format(rn.RvNeuralNetwork.__name__)
         rn.Debug_Plot = True #ri.Ask_YesNo("Plot Digits?", "n") 
     #    Predict_Digits(net, lstT)
         rf.Predict_Digits_FromNetworkFile(fn1, lstT, rn.Debug_Plot)    

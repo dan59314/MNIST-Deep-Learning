@@ -65,6 +65,8 @@ import RvMiscFunctions as rf
 import RvNeuNetworkMethods as nm
 from RvNeuNetworkMethods import EnumDropOutMethod as drpOut
 import PlotFunctions as pltFn
+import RvFileIO as rfi
+
 
 
 
@@ -90,7 +92,7 @@ def Main():
     if not os.path.isdir(path):
         os.mkdir(path)           
     
-    fnNetworkData = "{}{}_NetData".format(path,rn.RvNeuralNetwork.__name__)   
+    fnNetworkData = "{}{}_DNN_Digit".format(path,rn.RvNeuralNetwork.__name__)   
     fnNetworkData1 = ""
     
     
@@ -100,17 +102,20 @@ def Main():
     learnRate = 0.1  # learnRate and lmbda will affect each other
     lmbda = 5.0     #add lmbda(Regularization) to solve overfitting 
     
-    
+    sTrain = "y"
     
     # Training ***********************************************************
-    # Ask DoTraining-
-    DoTraining = ri.Ask_YesNo("Do Training?", "y")
-    if DoTraining:             
+    LoadAndTrain = ri.Ask_YesNo("Load exist model and continue training?", "n")    
+    
+    if LoadAndTrain:    
+        fns, shortFns =  rfi.Get_FilesInFolder(".\\NetData\\", [".dnn"])
+        aId = ri.Ask_SelectItem("Select DNN Network file", shortFns, 0)    
+        fn1= fns[aId]
+        net = rn.RvNeuralNetwork(fn1) 
+        sTrain = "n"
+        initialWeiBias = False
         
-        digitIdOnly = 5
-        digitIdOnly = ri.Ask_Input_Integer("Train which Digit (0~9, -1 = All Digits): ", digitIdOnly)
-        
-        
+    else:            
         """
         [784,50,10], loop=100, 0.9725
         """
@@ -127,8 +132,26 @@ def Main():
         #   rn.RvNeuralNetwork.LayersNeurons_To_RvNeuralLayers(lyrsNeus))
         #net = rn.RvNeuralNetwork.Class_Create_LayersNeurons(lyrsNeus)
         net = rn.RvNeuralNetwork(lyrsNeus)  # ([784,50,10])
-                
+        initialWeiBias = True
+
+
         
+    
+    digitIdOnly = 5
+    digitIdOnly = ri.Ask_Input_Integer("Train which Digit (0~9, -1 = All Digits): ", digitIdOnly)
+    
+    
+    
+    
+    
+    # Training ***********************************************************
+    DoTrain = ri.Ask_YesNo("Do Training?", sTrain)    
+    if DoTrain:        
+        fnNetworkData = "{}_{}Lyr".format(fnNetworkData, len(net.NeuralLayers))
+               
+        net.DoPloatWeights = ri.Ask_YesNo("Plot Neurons Weights?", 'n')
+            
+    
         # Ask nmtivation  ------------------_----------
         enumActivation = ri.Ask_Enum("Select Activation method.", 
              nm.EnumActivation,  nm.EnumActivation.afReLU )
@@ -136,8 +159,6 @@ def Main():
             lyr.ClassActivation, lyr.ClassCost = \
             nm.Get_ClassActivation(enumActivation)
         
-        net.Motoring_TrainningProcess = rn.Debug
-    
         net.NetEnableDropOut = ri.Ask_YesNo("Execute DropOut?", "n")
         if net.NetEnableDropOut:
             enumDropOut = ri.Ask_Enum("Select DropOut Method.", 
@@ -145,9 +166,6 @@ def Main():
             rn.gDropOutRatio = ri.Ask_Input_Float("Input DropOut ratio.", rn.gDropOutRatio)
             net.Set_DropOutMethod(enumDropOut, rn.gDropOutRatio)
         
-        monitoring = ri.Ask_YesNo("Watch training process?", "y")
-        net.Motoring_TrainningProcess = monitoring
-             
         
         # Auto-Caculate proper hyper pameters ---
         DoEvaluate_ProperParams = ri.Ask_YesNo("Auto-Caculating proper hyper pameters?", "n")
@@ -162,19 +180,27 @@ def Main():
         print( "Hyper pameters: Loop({}), stepNum({}), learnRatio({}), lmbda({})\n".format(loop,stepNum,learnRate,lmbda)  )
     
     
-        start = time.time()   
+        
         # Start Training-
-        net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda, 
-            blInitialWeiBias=True, trainOnlyDigit=digitIdOnly)
-        
-        dT = time.time()-start
-        
-        fnNetworkData1 = rf.Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,
-            learnRate,lmbda, dT, ".nnf")
+        keepTraining = True
+        while (keepTraining):    
+          start = time.time()       
+          
+          # Start Training-
+          net.Train(lstTrain, loop, stepNum, learnRate, lstV, lmbda, initialWeiBias , trainOnlyDigit=digitIdOnly)
+          initialWeiBias = False
+          
+          dT = time.time()-start
+            
+          fnNetworkData1 = rf.Save_NetworkDataFile(net, fnNetworkData, loop,stepNum,
+              learnRate,lmbda, dT, ".dnn")
+          
+          keepTraining = ri.Ask_YesNo("Keep Training?", "y")
+            
     
     # Prediction ------------------------------------------------
     if (not os.path.isfile(fnNetworkData1)): 
-        fnNetworkData1= ".\\NetData\\{}_NetData_DontDelete.nnf". \
+        fnNetworkData1= ".\\NetData\\{}_DNN_Digit.dnn". \
             format(rn.RvNeuralNetwork.__name__)
     
     
