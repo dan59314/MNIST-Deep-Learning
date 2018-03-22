@@ -110,13 +110,11 @@ Deep Learning codes for MNIST with detailed explanation
 
 [![AutoEncoder Sharpen](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/vdoImg_3_0.png)](https://goo.gl/ykXHqz?t=0s "MNIST Sharpen Model") 
 
-[MNIST GAN Video](https://youtu.be/_j_7gE34HsY)
+[MNIST GAN Video0](https://youtu.be/_j_7gE34HsY)
 
-[![MNIST GAN](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/gan_01.jpg)](https://youtu.be/_j_7gE34HsY?t=0s "MNIST GAN Model") 
+[MNIST GAN Video1](https://youtu.be/a3VB-xBb_IY)
 
-
-    GAN:
-        https://youtu.be/_j_7gE34HsY
+[![MNIST GAN](https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/gan_01.jpg)](https://youtu.be/a3VB-xBb_IY?t=0s "MNIST GAN Model") 
 
 
 ------------------------------------------------------------------------------------
@@ -174,15 +172,25 @@ Deep Learning codes for MNIST with detailed explanation
       
       
  ### Build Sharpen Model:
-      ### Train_SharpenModel.py  # Build Sharpen Model
+      #### Train_SharpenModel.py  # Build Sharpen Model
         
         .... encoder, decoder = endecoder.Build_Encoder_Decoder_AssignOutputY( \
             lstNew, loop, stepNum, learnRate, lmbda, initialWeights, digitIdOnly)
       
-      ### Test_SharpenModel.py  # Test Denoise and sharpen 
+      #### Test_SharpenModel.py  # Test Denoise and sharpen 
  
         .....  rf.Test_EnDecoder(sharpenModel, lstTest, sampleNum, imgPath, noiseStrength)
  
+ ### Train GAN Model:
+      #### Train_GanModel.py  # Load Genererator, Discriminator, Encoder from file or build new ones
+      
+        ...    
+        if LoadAndTrain:    
+            generator, discriminator, encoder = Get_Models_FromFile(intialDiscriminator)
+        else:
+            generator, discriminator, encoder = Get_Models_New(lstTrain,intialDiscriminator)
+        ...
+	
 ------------------------------------------------------------------------------------      
 ## Test result
 
