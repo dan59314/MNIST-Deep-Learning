@@ -237,6 +237,8 @@ AutoEncoder
 
 <img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/AutoEncode01.JPG" width="480">
 
+<img src="https://github.com/dan59314/MNIST-Deep-Learning/blob/master/images/CNN01.png" width="480">
+
 ------------------------------------------------------------------------------------
 ## Misc. Projects of 3D, Multimedia, Arduino Iot, CAD/CAM, Free Tools
 
