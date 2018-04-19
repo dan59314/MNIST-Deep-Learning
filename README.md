@@ -1,4 +1,7 @@
-# MNIST-Deep-Learning
+# MNIST-Deep-Learning  
+
+Numpy Only, without Tensorfloat, Keras.... 3rd API
+
 Deep Learning codes for MNIST with detailed explanation 
 
   ---------------------------------------------------------------------------------
